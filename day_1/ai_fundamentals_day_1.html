@@ -1,0 +1,2112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fundamentals - Day 1 Presentation Deck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Polyfill and MathJax for LaTeX Rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --navy-dark: #0a192f;
+            --navy-deep: #020617;
+            --teal-primary: #008080;
+            --teal-dark: #005f5f;
+            --teal-light: #e0f2f1;
+            --teal-soft: #e6f4f1;
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+            --bg-slide: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: #cbd5e1;
+            --accent-glow: rgba(0, 128, 128, 0.15);
+            --laser-glow: rgba(239, 68, 68, 0.8);
+            --header-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --navy-dark: #f8fafc;
+            --navy-deep: #020617;
+            --teal-primary: #2dd4bf;
+            --teal-dark: #14b8a6;
+            --teal-light: #115e59;
+            --teal-soft: #042f2e;
+            --text-dark: #cbd5e1;
+            --text-muted: #94a3b8;
+            --bg-slide: #0b1329;
+            --card-bg: #111b36;
+            --card-border: #1e293b;
+            --accent-glow: rgba(45, 212, 191, 0.15);
+            --header-bg: #111b36;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--navy-deep);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Presentation Wrapper */
+        .presentation-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding-bottom: 70px; /* Space for control bar */
+        }
+
+        .slides-viewport {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background-color: var(--navy-deep);
+            transition: transform 0.3s ease;
+        }
+
+        /* Single Slide Container */
+        .slide-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-slide);
+            padding: 40px 55px 65px 55px; /* Added extra bottom padding to clear the footer */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(100px);
+            transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+
+        .slide-container.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            z-index: 2;
+        }
+
+        .slide-container.previous {
+            transform: translateX(-100px);
+        }
+
+        /* Top Accent Bar */
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--teal-dark) 0%, var(--teal-primary) 100%);
+            z-index: 5;
+        }
+
+        /* Slide Footer Branding */
+        .slide-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 55px;
+            right: 55px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--card-border);
+            padding-top: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .slide-footer span.left {
+            color: var(--text-muted);
+        }
+
+        .slide-footer span.right {
+            font-weight: 600;
+            color: var(--teal-primary);
+        }
+
+        /* Navigation & Sketch Canvas */
+        .slide-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            cursor: crosshair;
+        }
+
+        .slide-container.drawing-active .slide-canvas {
+            pointer-events: auto;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--navy-dark);
+            line-height: 1.25;
+        }
+
+        .slide-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 22px;
+            text-align: left;
+            border-bottom: 2px solid var(--teal-light);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 3;
+            position: relative;
+        }
+
+        .slide-title span.badge {
+            font-size: 13px;
+            font-weight: 600;
+            background-color: var(--teal-primary);
+            color: #ffffff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        p, li, th, td {
+            font-size: 16px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: center;
+            width: 100%;
+            z-index: 3;
+            position: relative;
+            height: calc(100% - 95px); /* Adjusted to balance header + footer height */
+        }
+
+        /* Dual Logos Branding */
+        .header-logos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .academy-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .partner-logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Title Slide Layout */
+        .title-layout {
+            text-align: center;
+            margin: auto;
+            max-width: 950px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .title-layout .tag {
+            display: inline-block;
+            background-color: var(--teal-primary);
+            color: #ffffff;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .title-layout h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--navy-dark);
+            margin-bottom: 12px;
+        }
+
+        .title-layout .subtitle {
+            font-size: 22px;
+            color: var(--teal-dark);
+            font-weight: 500;
+            margin-bottom: 25px;
+        }
+
+        .title-layout .meta-info {
+            font-size: 15px;
+            color: var(--text-muted);
+            background-color: var(--card-bg);
+            padding: 10px 25px;
+            border-radius: 30px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        /* Agenda Layout */
+        .agenda-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .agenda-card {
+            background-color: var(--card-bg);
+            border-left: 5px solid var(--teal-primary);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-top: 1px solid var(--card-border);
+            border-right: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .agenda-card .time {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--teal-primary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .agenda-card h3 {
+            font-size: 18px;
+            color: var(--navy-dark);
+            margin-bottom: 8px;
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .two-column.tiled > div {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            padding: 24px;
+            height: 100%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .two-column.tiled h3 {
+            font-size: 19px;
+            color: var(--teal-primary);
+            margin-bottom: 12px;
+        }
+
+        .two-column.align-top {
+            align-items: start;
+        }
+
+        /* Image/Visual Wrapper */
+        .image-wrapper {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            height: 380px;
+            width: 100%;
+            background-color: var(--card-bg);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Tiled Content with Icons */
+        .tiled-content {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .tile {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            flex: 1;
+            padding: 25px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tile .icon {
+            color: var(--teal-primary);
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .tile h3 {
+            font-size: 19px;
+            color: var(--navy-dark);
+            margin-bottom: 10px;
+        }
+
+        /* Concentric Circles Diagram Layout (Concept 03) */
+        .nested-ai-layout {
+            display: grid;
+            grid-template-columns: 45% 52%;
+            gap: 30px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .concentric-wrapper {
+            position: relative;
+            width: 440px;
+            height: 440px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .circle-ai {
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            border: 2.5px dashed var(--navy-dark);
+            background-color: var(--teal-soft);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 15px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+        }
+
+        .circle-ml {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            border: 2px solid var(--teal-primary);
+            background-color: var(--teal-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 15px;
+            position: absolute;
+            top: 48px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .circle-dl {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 2px solid var(--teal-dark);
+            background-color: #80cbc4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 15px;
+            position: absolute;
+            top: 48px;
+        }
+
+        body.dark-mode .circle-dl {
+            background-color: #004d40;
+        }
+
+        .circle-genai {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: var(--navy-dark);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            text-align: center;
+            font-size: 13px;
+            position: absolute;
+            top: 48px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+        }
+
+        body.dark-mode .circle-genai {
+            background-color: var(--teal-primary);
+            color: var(--navy-deep);
+        }
+
+        .circle-label-top {
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--navy-dark);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nested-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nested-cards .nested-card {
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid transparent;
+        }
+
+        .nested-card.ai-card {
+            background-color: var(--teal-soft);
+            border-color: var(--teal-light);
+        }
+
+        .nested-card.ml-card {
+            background-color: var(--teal-light);
+            border-color: #80cbc4;
+        }
+
+        body.dark-mode .nested-card.ml-card {
+            background-color: var(--teal-soft);
+            border-color: var(--teal-dark);
+        }
+
+        .nested-card.dl-card {
+            background-color: #b2dfdb;
+            border-color: #4db6ac;
+        }
+
+        body.dark-mode .nested-card.dl-card {
+            background-color: #004d40;
+            border-color: var(--teal-dark);
+        }
+
+        .nested-card.genai-card {
+            background-color: var(--navy-dark);
+            color: #ffffff;
+        }
+
+        body.dark-mode .nested-card.genai-card {
+            background-color: #1e293b;
+        }
+
+        .nested-card h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .nested-card.genai-card h3 {
+            color: var(--teal-primary);
+        }
+
+        .nested-card p {
+            font-size: 13.5px;
+            line-height: 1.4;
+        }
+
+        /* Formula Card Styling */
+        .formula-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            text-align: center;
+        }
+
+        .formula-display {
+            font-size: 19px;
+            margin: 8px 0;
+            color: var(--navy-dark);
+        }
+
+        .formula-card p.caption {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        /* Transformer Flow Stack */
+        .transformer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .stack-box {
+            background-color: var(--card-bg);
+            border: 1.5px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 18px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+            transition: all 0.2s;
+        }
+
+        .stack-box.dark {
+            background-color: var(--navy-dark);
+            color: var(--bg-slide);
+            border: none;
+        }
+
+        .stack-box.teal {
+            background-color: var(--teal-primary);
+            color: #ffffff;
+            border: none;
+        }
+
+        .stack-box h4 {
+            font-size: 14.5px;
+            margin-bottom: 2px;
+        }
+
+        .stack-box.dark h4 {
+            color: var(--teal-primary);
+        }
+
+        .stack-box.teal h4 {
+            color: #ffffff;
+        }
+
+        .stack-box p {
+            font-size: 12px;
+            color: inherit;
+            opacity: 0.85;
+            line-height: 1.4;
+        }
+
+        .stack-caption {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* Lab Step Cards */
+        .lab-step-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 25px;
+            height: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border-top: 5px solid var(--teal-primary);
+        }
+
+        .lab-step-card h3 {
+            font-size: 20px;
+            color: var(--navy-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lab-step-card code {
+            font-size: 13.5px;
+        }
+
+        /* Section Intro Page */
+        .section-slide-layout {
+            text-align: center;
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .section-slide-layout .tag {
+            background-color: var(--navy-dark);
+            color: #ffffff;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-mode .section-slide-layout .tag {
+            background-color: var(--teal-primary);
+            color: var(--navy-deep);
+        }
+
+        .section-slide-layout h2 {
+            font-size: 44px;
+            color: var(--navy-dark);
+            margin: 15px 0;
+        }
+
+        .section-slide-layout hr {
+            border: none;
+            height: 4px;
+            background: linear-gradient(90deg, var(--navy-dark), var(--teal-primary));
+            width: 120px;
+            margin: 25px auto;
+            border-radius: 2px;
+        }
+
+        /* Q&A Layout */
+        .qa-layout {
+            text-align: center;
+            margin: auto;
+            max-width: 850px;
+        }
+
+        .qa-layout h2 {
+            font-size: 54px;
+            color: var(--navy-dark);
+            margin-bottom: 15px;
+        }
+
+        .qa-layout .contact-info {
+            margin-top: 30px;
+            font-size: 18px;
+            color: var(--text-muted);
+            background-color: var(--teal-soft);
+            padding: 18px;
+            border-radius: 10px;
+            border: 1px solid var(--teal-primary);
+        }
+
+        /* Controls Bottom Bar */
+        .controls-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: var(--header-bg);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 100;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-btn {
+            background: none;
+            border: 1px solid var(--card-border);
+            color: var(--navy-dark);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--teal-soft);
+            border-color: var(--teal-primary);
+            color: var(--teal-dark);
+        }
+
+        .control-btn.active {
+            background-color: var(--teal-primary);
+            color: #ffffff;
+            border-color: var(--teal-primary);
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        /* Overview Mode Grid Styles */
+        .presentation-container.overview-active {
+            overflow-y: auto;
+            padding: 40px;
+            justify-content: flex-start;
+        }
+
+        .presentation-container.overview-active .slides-viewport {
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            transform: none !important;
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .presentation-container.overview-active .slide-container {
+            position: relative;
+            width: 100% !important;
+            height: 180px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+            cursor: pointer;
+            border: 3px solid var(--card-border);
+            border-radius: 12px;
+            transition: all 0.2s;
+            padding: 10px;
+            overflow: hidden;
+            user-select: none;
+            background-color: var(--bg-slide);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .presentation-container.overview-active .slide-container.active {
+            border-color: var(--teal-primary);
+            box-shadow: 0 0 15px var(--teal-primary);
+        }
+
+        .presentation-container.overview-active .slide-container:hover {
+            border-color: var(--teal-dark);
+            transform: translateY(-4px);
+        }
+
+        /* Scale contents in overview mode */
+        .presentation-container.overview-active .slide-container > * {
+            transform: scale(0.25);
+            transform-origin: top left;
+            width: 400% !important;
+            height: 400% !important;
+            pointer-events: none;
+        }
+
+        .presentation-container.overview-active .slide-canvas {
+            display: none !important;
+        }
+
+        .presentation-container.overview-active .controls-bar {
+            display: none !important;
+        }
+
+        /* Sidebar Slide Drawer */
+        .slide-drawer {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100%;
+            background-color: var(--header-bg);
+            border-right: 1px solid var(--card-border);
+            z-index: 101;
+            transition: left 0.3s ease;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-drawer.open {
+            left: 0;
+        }
+
+        .drawer-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-header h3 {
+            font-size: 18px;
+            color: var(--navy-dark);
+        }
+
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .drawer-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .drawer-list .drawer-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .drawer-list .drawer-item:hover {
+            background-color: var(--teal-soft);
+            color: var(--teal-dark);
+        }
+
+        .drawer-list .drawer-item.active {
+            background-color: var(--teal-primary);
+            color: #ffffff;
+        }
+
+        .drawer-list .drawer-item span.num {
+            font-size: 12px;
+            font-weight: 700;
+            background-color: rgba(0,0,0,0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .drawer-list .drawer-item.active span.num {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* Floating Laser Pointer Dot */
+        .laser-pointer-dot {
+            position: fixed;
+            width: 14px;
+            height: 14px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0 8px #ef4444, 0 0 15px #ef4444, 0 0 25px #ef4444;
+            transform: translate(-50%, -50%);
+        }
+
+        ul {
+            list-style: square;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--card-border);
+            margin: 15px 0;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: var(--teal-soft);
+            color: var(--teal-dark);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-container" id="presentationContainer">
+    <div class="slides-viewport" id="slidesViewport">
+
+        <!-- Slide 1: Title Slide -->
+        <div class="slide-container active" id="slide1" data-title="Title Slide">
+            <canvas class="slide-canvas"></canvas>
+            <div class="header-logos">
+                <div class="academy-logo">
+                    <img src="sarveshwar_logo.png" alt="Sarveshwar Academy Logo" style="height: 60px; width: auto; object-fit: contain;">
+                </div>
+                
+                <div class="partner-logo-container">
+                    <img src="partner_logo.jpg" alt="Partner University Logo" style="height: 60px; width: auto; object-fit: contain; border-radius: 8px; border: 1px solid var(--card-border);">
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="title-layout">
+                    <span class="tag">FACULTY DEVELOPMENT PROGRAM</span>
+                    <h1>Building a Mini Transformer & Baby-GPT</h1>
+                    <p class="subtitle">Day 1: NLP Foundations & Autoregressive Text Generation</p>
+                    <div class="meta-info">
+                        <i class="fa-solid fa-graduation-cap" style="color: var(--teal-primary); margin-right: 6px;"></i> Sandwiched Lecture + Interactive Cloud Labs
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide-container" id="slide2" data-title="Course Agenda">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">FDP Sandwiched Agenda & Labs <span class="badge">Day 1 Curriculum</span></h2>
+            <div class="content-area">
+                <div class="agenda-grid">
+                    <div class="agenda-card">
+                        <div class="time">Module 1</div>
+                        <h3>Tokenizer & Vocabulary Maps</h3>
+                        <p><strong>Lecture:</strong> Rules vs Data, AI Venn, and NLP pipelines.<br><strong>Lab 1:</strong> Code a regex sentence-batch tokenizer with sequence padding in Python.</p>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="time">Module 2</div>
+                        <h3>Word Embeddings & Self-Attention</h3>
+                        <p><strong>Lecture:</strong> Landmark Attention paper and Query, Key, Value game.<br><strong>Lab 2:</strong> Code a matrix dot-product Self-Attention layer in NumPy.</p>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="time">Module 3</div>
+                        <h3>The Mini Transformer Block</h3>
+                        <p><strong>Lecture:</strong> Stacking layers, Residual Connections, and Layer Normalization.<br><strong>Lab 3:</strong> Stack a complete, run-anywhere Transformer Block.</p>
+                    </div>
+                    <div class="agenda-card" style="border-left-color: var(--navy-dark);">
+                        <div class="time" style="color: var(--navy-dark);"><i class="fa-solid fa-share-nodes"></i> Lab Delivery</div>
+                        <h3>Baby-GPT & Blocker Notebooks</h3>
+                        <p><strong>Delivery Strategy:</strong> Provide <code>instructor.ipynb</code> for reference, and <code>student.ipynb</code> containing empty coding slots (blockers) to solve in Colab.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Course Agenda</span>
+            </div>
+        </div>
+
+        <!-- Slide 3: Rule-Based vs Data-Driven -->
+        <div class="slide-container" id="slide3" data-title="Rule-Based vs Data-Driven">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">The Paradigm Shift: Rules vs. Data-Driven Computing <span class="badge">Day 1 Focus</span></h2>
+            <div class="content-area">
+                <div class="two-column tiled">
+                    <div>
+                        <h3>Traditional Programming (Rule-Based)</h3>
+                        <p style="margin-bottom: 12px;"><strong>Methodology:</strong> Humans define explicit logical mathematical formulas and code rules, feed in inputs, and compute outputs.</p>
+                        <div class="formula-card" style="background-color: var(--teal-soft); margin-bottom: 15px; border-color: var(--teal-light);">
+                            <strong>Input + Explicit Rules $\rightarrow$ Output</strong>
+                        </div>
+                        <p style="font-size: 14.5px;"><em>Engineering Analogy:</em> Finite Element Analysis (FEA) mesh calculation with explicitly defined boundary conditions.</p>
+                    </div>
+                    <div>
+                        <h3>Machine Learning (Data-Driven)</h3>
+                        <p style="margin-bottom: 12px;"><strong>Methodology:</strong> We feed historical input data alongside matching output examples into algorithms to synthesize underlying equations.</p>
+                        <div class="formula-card" style="background-color: var(--teal-soft); margin-bottom: 15px; border-color: var(--teal-light);">
+                            <strong>Input Data + Historical Outputs $\rightarrow$ Rules (Model)</strong>
+                        </div>
+                        <p style="font-size: 14.5px;"><em>Engineering Analogy:</em> Empirical System Identification — analyzing raw input-output vibrations to map transfer equations.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">NLP Intro | 01</span>
+            </div>
+        </div>
+
+        <!-- Slide 4: Concentric Circles AI Hierarchy -->
+        <div class="slide-container" id="slide4" data-title="AI Taxonomy Venn">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Defining the AI, ML, DL & GenAI Hierarchy <span class="badge">Taxonomy Mapping</span></h2>
+            <div class="content-area">
+                <div class="nested-ai-layout">
+                    <!-- Concentric Circles Diagram -->
+                    <div class="concentric-wrapper">
+                        <div class="circle-ai">
+                            <span class="circle-label-top">Artificial Intelligence (AI)</span>
+                            <div class="circle-ml">
+                                <span class="circle-label-top">Machine Learning (ML)</span>
+                                <div class="circle-dl">
+                                    <span class="circle-label-top">Deep Learning (DL)</span>
+                                    <div class="circle-genai">
+                                        <span>Generative AI<br>(GenAI)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Explanatory Cards -->
+                    <div class="nested-cards">
+                        <div class="nested-card ai-card">
+                            <h3 style="color: var(--navy-dark);">Artificial Intelligence (AI)</h3>
+                            <p>The overarching field of computer science dedicated to building systems capable of executing cognitive tasks that typically require human reasoning.</p>
+                        </div>
+                        <div class="nested-card ml-card">
+                            <h3 style="color: var(--teal-dark);">Machine Learning (ML)</h3>
+                            <p>A major subset of AI: algorithms that automatically parse patterns from structured tabular datasets to optimize predictions without manual rule-coding.</p>
+                        </div>
+                        <div class="nested-card dl-card">
+                            <h3 style="color: #004d40;">Deep Learning (DL)</h3>
+                            <p>A subset of ML focusing on multi-layered artificial neural networks designed to automatically extract hierarchical feature layers from unstructured data streams.</p>
+                        </div>
+                        <div class="nested-card genai-card">
+                            <h3>Generative AI (GenAI)</h3>
+                            <p>The innermost subset of DL: large foundation models trained to compute probability distributions and generate completely new synthetic media, text, or data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">NLP Intro | 02</span>
+            </div>
+        </div>
+
+        <!-- Slide 5: AI Evolution Timeline -->
+        <div class="slide-container" id="slide5" data-title="AI History & Chronology">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">A Brief History of AI with Deep Learning <span class="badge">Evolution Timeline</span></h2>
+            <div class="content-area">
+                <div class="two-column">
+                    <div>
+                        <ul>
+                            <li><strong>First Golden Age (1956–1969):</strong> Initiated by the Dartmouth workshop. Focused on theorem proving, early neural networks (Perceptron), and symbolic representation.</li>
+                            <li style="margin-top: 12px;"><strong>First Dark Age (1969–1980):</strong> Triggered by the XOR problem proof, showing simple Perceptrons couldn't solve non-linear operations.</li>
+                            <li style="margin-top: 12px;"><strong>Second Golden Age (1980–1995):</strong> Driven by Backpropagation (Rumelhart/Hinton) and Neocognitrons. Culminated in SVMs and early CNNs.</li>
+                            <li style="margin-top: 12px;"><strong>Second Dark Age (1998–2006):</strong> Vanishing gradient limits restricted shallow neural network performance.</li>
+                            <li style="margin-top: 12px;"><strong>Third Golden Age (2006–Present):</strong> Deep learning scale-ups (AlexNet in 2012) and Transformers in 2017 lead to ChatGPT and modern models.</li>
+                        </ul>
+                    </div>
+                    <div class="image-wrapper" style="background-color: #ffffff; border: 1px solid var(--card-border);">
+                        <img alt="A Brief History of AI with Deep Learning Timeline" src="ai_evol.png" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">NLP Intro | 03</span>
+            </div>
+        </div>
+
+        <!-- Slide 6: Special Mention - Vaswani & Attention -->
+        <div class="slide-container" id="slide6" data-title="Vaswani & Attention">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Vaswani & The Self-Attention Revolution <span class="badge">Special Mention</span></h2>
+            <div class="content-area">
+                <div class="two-column">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">The Landmark Transformer Paper (2017)</h3>
+                        <p style="margin-bottom: 12px;">In 2017, a team of researchers led by <strong>Ashish Vaswani</strong> published the seminal paper <em>"Attention Is All You Need"</em>, introducing the <strong>Transformer architecture</strong>.</p>
+                        <p style="margin-bottom: 12px;">Previously, models like LSTMs/RNNs processed text sequentially, word-by-word, creating context memory bottlenecks and preventing GPU parallelization.</p>
+                        <div style="background-color: var(--teal-soft); border-left: 4px solid var(--teal-primary); padding: 15px; border-radius: 4px; font-style: italic; margin-top: 15px;">
+                            "The attention mechanism allows the model to dynamically look at and weigh the importance of all other words in a sequence simultaneously, regardless of their distance."
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 25px; border-radius: 12px;">
+                        <div>
+                            <h3 style="color: var(--navy-dark); margin-bottom: 10px;">The Mathematical Core</h3>
+                            <p style="font-size: 14.5px; margin-bottom: 8px;">Transformers compute similarity scores between Query (Q), Key (K), and Value (V) matrices:</p>
+                            <div class="formula-card" style="padding: 10px; margin: 10px 0;">
+                                $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--teal-dark); margin-bottom: 6px; font-size: 15px;">Historical Impact</h4>
+                            <p style="font-size: 13.5px; line-height: 1.4;">By enabling GPU clusters to train on massive datasets in parallel, Vaswani's work unlocked the scale-up capacity that directly powered GPT-3, ChatGPT, Claude, and all modern foundation models.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">NLP Intro | 04</span>
+            </div>
+        </div>
+
+        <!-- Slide 7: Transformer Architecture -->
+        <div class="slide-container" id="slide7" data-title="Transformer Architecture">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Transformer Architecture & Core Components <span class="badge">Concept Overview</span></h2>
+            <div class="content-area">
+                <p style="font-size: 15px; margin-top: -15px; margin-bottom: 20px; color: var(--text-muted); font-style: italic;">The architecture behind virtually every modern LLM.</p>
+                <div class="two-column align-top">
+                    <!-- Left Stack Flow -->
+                    <div class="transformer-stack">
+                        <!-- Output: Top -->
+                        <div class="stack-box teal">
+                            <h4>Output: Next-Token Probabilities</h4>
+                            <p>A softmax layer predicts the most likely next token.</p>
+                        </div>
+                        <!-- Layer Norm -->
+                        <div class="stack-box dark">
+                            <h4>Layer Norm + Residual Connections</h4>
+                            <p>Stabilizes training across many stacked layers.</p>
+                        </div>
+                        <!-- Feed-Forward -->
+                        <div class="stack-box dark">
+                            <h4>Feed-Forward Network</h4>
+                            <p>Per-token transformation adds representational power.</p>
+                        </div>
+                        <!-- Multi-Head -->
+                        <div class="stack-box dark">
+                            <h4>Multi-Head Self-Attention</h4>
+                            <p>Each token weighs the relevance of every other token.</p>
+                        </div>
+                        <!-- Input: Bottom -->
+                        <div class="stack-box dark">
+                            <h4>Input Embeddings + Positional Encoding</h4>
+                            <p>Words become vectors; position info is added.</p>
+                        </div>
+                        <div class="stack-caption">
+                            <i class="fa-solid fa-arrow-up"></i> information flows upward through stacked layers
+                        </div>
+                    </div>
+
+                    <!-- Right Column Cards -->
+                    <div class="nested-cards" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 15px;">
+                        <!-- Self-Attention One-Liner -->
+                        <div class="nested-card ai-card" style="display: flex; gap: 15px; align-items: start;">
+                            <div style="background-color: var(--teal-primary); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; font-size: 20px;">
+                                <i class="fa-solid fa-share-nodes"></i>
+                            </div>
+                            <div>
+                                <h3 style="color: var(--navy-dark); font-size: 17px; margin-bottom: 5px;">Self-Attention, in one line</h3>
+                                <p style="font-size: 13.5px; line-height: 1.4; color: var(--text-muted);">For every word, the model asks: "which other words in this sentence matter most to understanding me?" — and blends them accordingly.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Why it Matters -->
+                        <div class="nested-card genai-card" style="padding: 22px;">
+                            <h3 style="color: var(--teal-primary); font-size: 17px; margin-bottom: 8px;">Why it matters</h3>
+                            <p style="font-size: 13.5px; line-height: 1.5; color: #ffffff;">Transformers process entire sequences in parallel (unlike RNNs) — enabling the massive scale of GPT, BERT, and today's foundation models.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">NLP Intro | 05</span>
+            </div>
+        </div>
+
+        <!-- Slide 8: Module 1 Intro -->
+        <div class="slide-container" id="slide8" data-title="Module 1 Intro">
+            <canvas class="slide-canvas"></canvas>
+            <div class="content-area">
+                <div class="section-slide-layout">
+                    <span class="tag">MODULE 1</span>
+                    <h2>Text Tokenization & Vocabulary Maps</h2>
+                    <p style="font-size: 20px; color: var(--text-muted);">Converting Raw Characters into Numerical Token Lists and Sequence Alignments</p>
+                    <hr>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 1 Intro</span>
+            </div>
+        </div>
+
+        <!-- Slide 9: Text Tokenization -->
+        <div class="slide-container" id="slide9" data-title="Tokenization Basics">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Tokenization: The Text-to-Numbers Interface <span class="badge">Module 1</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">Why Simple Splits Fail</h3>
+                        <p style="margin-bottom: 10px;">Splitting text strictly on blank space characters (<code>string.split()</code>) leads to token replication issues:</p>
+                        <ul>
+                            <li>"love" vs. "love," (contains trailing comma)</li>
+                            <li>"me!" vs. "me" (contains exclamation mark)</li>
+                        </ul>
+                        <div style="background-color: var(--teal-soft); border-left: 4px solid var(--teal-primary); padding: 12px; border-radius: 4px; margin-top: 15px; font-size: 14.5px;">
+                            We must use <strong>Regular Expressions (Regex)</strong> to cleanly isolate word characters <code>\w+</code> from individual punctuation symbols.
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">Batched Regex Tokenization</h3>
+                        <p style="margin-bottom: 12px;">Real-world language models accept a list of multiple sentences, lowercases them, and parses them simultaneously:</p>
+                        <div class="formula-card" style="text-align: left; padding: 15px; font-family: 'Fira Code', monospace; font-size: 13.5px;">
+                            Input: "I love AI, and AI loves me."<br>
+                            Tokens: ['i', 'love', 'ai', ',', 'and', 'ai', 'loves', 'me', '.']
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 1 | 01</span>
+            </div>
+        </div>
+
+        <!-- Slide 10: Vocab & Padding -->
+        <div class="slide-container" id="slide10" data-title="Vocab & Padding">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Vocabulary Mapping & Sequence Padding <span class="badge">Module 1</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">Vocabulary & Index Codes</h3>
+                        <p style="margin-bottom: 12px;">We index every unique token in the corpus. We reserve specific IDs for control signals:</p>
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid var(--card-border); font-size: 14px;">
+                            <tr style="background: var(--navy-dark); color: white;">
+                                <th style="padding: 6px 12px;">Special Token</th>
+                                <th style="padding: 6px 12px;">ID</th>
+                                <th style="padding: 6px 12px;">Purpose</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 12px;"><code>&lt;PAD&gt;</code></td>
+                                <td style="padding: 6px 12px;">0</td>
+                                <td style="padding: 6px 12px;">Align sequences in batches</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 12px;"><code>&lt;UNK&gt;</code></td>
+                                <td style="padding: 6px 12px;">1</td>
+                                <td style="padding: 6px 12px;">Represent unknown testing words</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">Sequence Padding Alignment</h3>
+                        <p style="margin-bottom: 10px;">Deep Learning models process batches in fixed rectangular tensor shapes. Shorter sentences are padded with zeros, and longer ones are truncated:</p>
+                        <div class="formula-card" style="text-align: left; padding: 12px; font-family: 'Fira Code', monospace; font-size: 13px;">
+                            Sentence 1: [2, 3, 4, 5, 0, 0]<br>
+                            Sentence 2: [6, 7, 8, 9, 10, 11]
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 1 | 02</span>
+            </div>
+        </div>
+
+        <!-- Slide 11: Hands-on Lab 1 -->
+        <div class="slide-container" id="slide11" data-title="Hands-on 1: Tokenizer">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Hands-on Lab 1: Regex & Padded Tokenizer <span class="badge">Lab Session</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div class="lab-step-card">
+                        <h3><i class="fa-solid fa-code" style="color: var(--teal-primary);"></i> Execution Checklist</h3>
+                        <ul>
+                            <li>Open Google Colab Notebook <code>day1_mini_transformer_scratch_student.ipynb</code></li>
+                            <li style="margin-top: 8px;">Find <strong>Blocker 1: Vocabulary Map Loop</strong> inside the <code>_build_vocabulary</code> method.</li>
+                            <li style="margin-top: 8px;">Fill in the vocabulary population logic to map words to IDs.</li>
+                            <li style="margin-top: 8px;">Run the cells to test sequence encoding and padding.</li>
+                        </ul>
+                    </div>
+                    <div style="background-color: var(--navy-dark); color: #ffffff; padding: 25px; border-radius: 12px; height: 100%;">
+                        <h4 style="color: var(--teal-primary); margin-bottom: 10px;">Blocker 1 Challenge</h4>
+                        <div style="font-family: 'Fira Code', monospace; font-size: 12px; color: #cbd5e1; line-height: 1.4;">
+                            # Blocker 1 Objective:<br>
+                            vocab = dict(self.special_tokens)<br>
+                            for tokens in tokenized_sentences:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;for token in tokens:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if token not in vocab:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vocab[token] = len(vocab)
+                        </div>
+                        <p style="font-size: 12px; margin-top: 15px; color: var(--teal-light); font-style: italic;"><i class="fa-regular fa-lightbulb"></i> len(vocab) automatically tracks the next available index value!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 1 | 03</span>
+            </div>
+        </div>
+
+        <!-- Slide 12: Module 2 Intro -->
+        <div class="slide-container" id="slide12" data-title="Module 2 Intro">
+            <canvas class="slide-canvas"></canvas>
+            <div class="content-area">
+                <div class="section-slide-layout">
+                    <span class="tag">MODULE 2</span>
+                    <h2>Word Embeddings & Self-Attention Mechanics</h2>
+                    <p style="font-size: 20px; color: var(--text-muted);">Representing Meaning as Vectors and Playing the Query-Key-Value Matching Game</p>
+                    <hr>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 2 Intro</span>
+            </div>
+        </div>
+
+        <!-- Slide 13: Word Embeddings -->
+        <div class="slide-container" id="slide13" data-title="Word Embeddings">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Word Embeddings: Meaning as Coordinates <span class="badge">Module 2</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">From Indexes to Semantic Vectors</h3>
+                        <p style="margin-bottom: 10px;">Token IDs are categorical. In a <code>vocab</code>, index <code>2</code> (king) and <code>3</code> (queen) are geometrically as distinct as <code>2</code> (king) and <code>100</code> (banana).</p>
+                        <p>An **Embedding Layer** represents each word as a vector of $D$ real numbers (e.g. 512 dimensions in base models). Words with similar meanings cluster together in this high-dimensional space.</p>
+                    </div>
+                    <div style="background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 25px; border-radius: 12px; text-align: center;">
+                        <h3 style="color: var(--navy-dark); font-size: 17px; margin-bottom: 15px;"><i class="fa-solid fa-compass-drafting" style="color: var(--teal-primary); margin-right: 8px;"></i> Vector Geometry ($v_{\text{king}} - v_{\text{man}} + v_{\text{woman}} \approx v_{\text{queen}}$)</h3>
+                        <svg viewBox="0 0 300 160" width="100%" height="120" style="border-radius: 8px; background-color: var(--bg-slide);">
+                            <!-- Axes -->
+                            <line x1="30" y1="10" x2="30" y2="140" stroke="var(--card-border)" stroke-width="1.5"/>
+                            <line x1="30" y1="140" x2="280" y2="140" stroke="var(--card-border)" stroke-width="1.5"/>
+                            
+                            <!-- King Vector -->
+                            <line x1="30" y1="140" x2="110" y2="50" stroke="var(--teal-primary)" stroke-width="2" marker-end="url(#arrow)"/>
+                            <text x="115" y="45" fill="var(--navy-dark)" font-size="10" font-weight="bold">king [0.8, 1.2]</text>
+                            
+                            <!-- Queen Vector -->
+                            <line x1="30" y1="140" x2="210" y2="60" stroke="#8b5cf6" stroke-width="2"/>
+                            <text x="215" y="55" fill="var(--navy-dark)" font-size="10" font-weight="bold">queen [2.1, 1.0]</text>
+                            
+                            <!-- Arrow Marker Def -->
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--teal-primary)"/>
+                                </marker>
+                            </defs>
+                        </svg>
+                        <p style="font-size: 12px; margin-top: 10px; color: var(--text-muted); font-style: italic;">Similar words point in similar directions, sharing semantic vector angles.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 2 | 01</span>
+            </div>
+        </div>
+
+        <!-- Slide 14: Self-Attention Mechanics (The Magic Robot) -->
+        <div class="slide-container" id="slide14" data-title="Self-Attention Story">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Self-Attention: The Query, Key, and Value Game <span class="badge">Module 2</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">Intuitive Concept</h3>
+                        <p style="margin-bottom: 10px;">In the sentence: <em>"The puppy didn't cross the street because <strong>it</strong> was too tired."</em></p>
+                        <p style="margin-bottom: 12px;">How does the computer map "**it**" to "**puppy**"?</p>
+                        <div style="background-color: var(--teal-soft); border-left: 4px solid var(--teal-primary); padding: 15px; border-radius: 4px; font-style: italic;">
+                            "Through Self-Attention, every word queries all other words in the sentence to calculate a friendship score (Attention weights), combining their representations."
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div class="nested-card ai-card" style="padding: 15px; display: flex; gap: 10px; align-items: center;">
+                            <div style="background-color: var(--teal-primary); color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0;"><i class="fa-solid fa-search"></i></div>
+                            <div>
+                                <h4 style="font-size: 14px; margin-bottom: 2px;">Query (Q): "What am I looking for?"</h4>
+                                <p style="font-size: 12px;">The active target word's search criteria vector.</p>
+                            </div>
+                        </div>
+                        <div class="nested-card ml-card" style="padding: 15px; display: flex; gap: 10px; align-items: center;">
+                            <div style="background-color: #005f5f; color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0;"><i class="fa-solid fa-tag"></i></div>
+                            <div>
+                                <h4 style="font-size: 14px; margin-bottom: 2px;">Key (K): "What kind of word am I?"</h4>
+                                <p style="font-size: 12px;">The index tag vector that other words match against.</p>
+                            </div>
+                        </div>
+                        <div class="nested-card genai-card" style="padding: 15px; display: flex; gap: 10px; align-items: center;">
+                            <div style="background-color: #1e293b; color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0;"><i class="fa-solid fa-gift"></i></div>
+                            <div>
+                                <h4 style="font-size: 14px; margin-bottom: 2px; color: var(--teal-primary);">Value (V): "What content do I contain?"</h4>
+                                <p style="font-size: 12px; color: #ffffff;">The actual word meaning features that get shared.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 2 | 02</span>
+            </div>
+        </div>
+
+        <!-- Slide 15: Self-Attention Math -->
+        <div class="slide-container" id="slide15" data-title="Self-Attention Math">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Calculating Attention Weights & Math <span class="badge">Module 2</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">The 5 Computational Steps</h3>
+                        <ol>
+                            <li><strong>Linear Projection</strong>: Multiply embeddings by projection weights to obtain matrices $Q$, $K$, and $V$.</li>
+                            <li style="margin-top: 6px;"><strong>Similarity Matrix</strong>: Matrix-multiply $Q$ and $K^T$ to compare queries and keys.</li>
+                            <li style="margin-top: 6px;"><strong>Scaling Factor</strong>: Divide scores by $\sqrt{d_k}$ to prevent gradient explosion.</li>
+                            <li style="margin-top: 6px;"><strong>Softmax Activation</strong>: Convert scores to probabilities (weights).</li>
+                            <li style="margin-top: 6px;"><strong>Weighted Output</strong>: Multiply weights by $V$.</li>
+                        </ol>
+                    </div>
+                    <div style="background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 25px; border-radius: 12px; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                        <h3 style="color: var(--navy-dark); font-size: 18px; margin-bottom: 12px; text-align: center;">The Mathematical Engine</h3>
+                        <div class="formula-card" style="padding: 15px; margin-bottom: 15px;">
+                            $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+                        </div>
+                        <p style="font-size: 13px; line-height: 1.4; color: var(--text-muted); text-align: center; font-style: italic;">
+                            This single equation handles context modeling in modern LLMs.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 2 | 03</span>
+            </div>
+        </div>
+
+        <!-- Slide 16: Hands-on Lab 2 -->
+        <div class="slide-container" id="slide16" data-title="Hands-on 2: Self-Attention">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Hands-on Lab 2: Matrix Self-Attention <span class="badge">Lab Session</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div class="lab-step-card">
+                        <h3><i class="fa-solid fa-flask" style="color: var(--teal-primary);"></i> Execution Checklist</h3>
+                        <ul>
+                            <li>Find <strong>Blocker 2 (Self-Attention Scores & Scaling)</strong> inside the <code>SelfAttention</code> class.</li>
+                            <li style="margin-top: 8px;">Implement <code>scores = Q @ K.swapaxes(-1, -2)</code> using the dot product operator.</li>
+                            <li style="margin-top: 8px;">Implement <code>scaled_scores = scores / np.sqrt(self.d_k)</code>.</li>
+                            <li style="margin-top: 8px;">Run the cells to output the attention weight matrices.</li>
+                        </ul>
+                    </div>
+                    <div style="background-color: var(--navy-dark); color: #ffffff; padding: 25px; border-radius: 12px; height: 100%;">
+                        <h4 style="color: var(--teal-primary); margin-bottom: 10px;">Blocker 2 Challenge</h4>
+                        <div style="font-family: 'Fira Code', monospace; font-size: 12px; color: #cbd5e1; line-height: 1.4;">
+                            # Calculate match scores:<br>
+                            scores = Q @ K.swapaxes(-1, -2)<br><br>
+                            # Scale scores to stabilize weights:<br>
+                            scaled_scores = scores / np.sqrt(self.d_k)
+                        </div>
+                        <p style="font-size: 12px; margin-top: 15px; color: var(--teal-light); font-style: italic;"><i class="fa-regular fa-lightbulb"></i> Swapaxes transposes the Key dimensions so rows and columns align for multiplication.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 2 | 04</span>
+            </div>
+        </div>
+
+        <!-- Slide 17: Module 3 Intro -->
+        <div class="slide-container" id="slide17" data-title="Module 3 Intro">
+            <canvas class="slide-canvas"></canvas>
+            <div class="content-area">
+                <div class="section-slide-layout">
+                    <span class="tag">MODULE 3</span>
+                    <h2>The Mini Transformer Block</h2>
+                    <p style="font-size: 20px; color: var(--text-muted);">Stabilizing Training with Residual Connections, Layer Normalization, and Feedforward Networks</p>
+                    <hr>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 3 Intro</span>
+            </div>
+        </div>
+
+        <!-- Slide 18: Residual Connections -->
+        <div class="slide-container" id="slide18" data-title="Residual Connections">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Residual Connections: Bypassing Networks <span class="badge">Module 3</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">The Vanishing Gradient Problem</h3>
+                        <p style="margin-bottom: 10px;">As we stack dozens of neural network layers, signal updates (gradients) decay to zero during training, causing the model to stop learning.</p>
+                        <p style="margin-bottom: 12px;"><strong>Solution:</strong> Shortcut pipelines that bypass layers, allowing gradients to flow back without decay.</p>
+                        <div class="formula-card" style="padding: 10px; margin: 10px 0;">
+                            $$\text{Output} = \text{Sublayer}(X) + X$$
+                        </div>
+                    </div>
+                    <div style="background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 25px; border-radius: 12px; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                        <h3 style="color: var(--navy-dark); font-size: 18px; margin-bottom: 12px; text-align: center;">Information Preservation</h3>
+                        <p style="font-size: 14.5px; line-height: 1.4; color: var(--text-muted); text-align: left; margin-bottom: 12px;">
+                            Residuals ensure that the original input representations are not lost during mathematical feature transformations.
+                        </p>
+                        <div style="background-color: var(--teal-soft); padding: 12px; border-radius: 8px; font-size: 13.5px; border-left: 4px solid var(--teal-primary);">
+                            Original Embeddings are added directly to the Attention Output matrices.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 3 | 01</span>
+            </div>
+        </div>
+
+        <!-- Slide 19: LayerNorm & FFN -->
+        <div class="slide-container" id="slide19" data-title="LayerNorm & FFN">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">LayerNorm & Feedforward Networks <span class="badge">Module 3</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">Layer Normalization (LayerNorm)</h3>
+                        <p style="margin-bottom: 10px;">Stabilizes activation signals by ensuring values across feature dimensions maintain a mean of 0 and a variance of 1.</p>
+                        <div class="formula-card" style="padding: 8px; margin: 10px 0;">
+                            $$\mu = \text{mean}(x) \quad | \quad \sigma^2 = \text{variance}(x)$$
+                            $$x_{\text{norm}} = \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}}$$
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-muted); font-style: italic;">$\epsilon$ is a tiny constant preventing division by zero.</p>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">Feedforward Network (FFN)</h3>
+                        <p style="margin-bottom: 10px;">Self-attention models token relationships. The FFN layer processes each token separately, applying non-linear transformations to learn complex features:</p>
+                        <div class="formula-card" style="padding: 8px; margin: 10px 0; font-family: 'Fira Code', monospace; font-size: 13px; text-align: left;">
+                            hidden = max(0, x @ W1 + b1) <br>
+                            output = hidden @ W2 + b2
+                        </div>
+                        <p style="font-size: 13.5px; color: var(--text-muted);">Uses <strong>ReLU</strong> to filter negative coordinate nodes to zero.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 3 | 02</span>
+            </div>
+        </div>
+
+        <!-- Slide 20: Hands-on Lab 3 -->
+        <div class="slide-container" id="slide20" data-title="Hands-on 3: Mini Transformer">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Hands-on Lab 3: Mini Transformer Block <span class="badge">Lab Session</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div class="lab-step-card">
+                        <h3><i class="fa-solid fa-square-plus" style="color: var(--teal-primary);"></i> Execution Checklist</h3>
+                        <ul>
+                            <li>Find <strong>Blocker 3 (Residual Shortcut Connections)</strong> inside the <code>MiniTransformerBlock</code> class.</li>
+                            <li style="margin-top: 8px;">Implement the first connection: <code>res1 = attn_out + x</code>.</li>
+                            <li style="margin-top: 8px;">Implement the second connection: <code>res2 = ffn_out + norm1</code>.</li>
+                            <li style="margin-top: 8px;">Stitch the blocks to construct the complete forward pass.</li>
+                        </ul>
+                    </div>
+                    <div style="background-color: var(--navy-dark); color: #ffffff; padding: 25px; border-radius: 12px; height: 100%;">
+                        <h4 style="color: var(--teal-primary); margin-bottom: 10px;">Blocker 3 Challenge</h4>
+                        <div style="font-family: 'Fira Code', monospace; font-size: 12px; color: #cbd5e1; line-height: 1.4;">
+                            # Blocker 3a: Add original x back<br>
+                            res1 = attn_out + x<br><br>
+                            # Blocker 3b: Add normalized features back<br>
+                            res2 = ffn_out + norm1
+                        </div>
+                        <p style="font-size: 12px; margin-top: 15px; color: var(--teal-light); font-style: italic;"><i class="fa-regular fa-lightbulb"></i> By bypassing block calculations, original input values pass directly to subsequent layers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Module 3 | 03</span>
+            </div>
+        </div>
+
+        <!-- Slide 21: End-to-End Baby-GPT Project -->
+        <div class="slide-container" id="slide21" data-title="Baby-GPT Project">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Major Project: Baby-GPT Prompt Auto-Complete <span class="badge">End-to-End</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 10px;">Training a Real Text Predictor</h3>
+                        <p style="font-size: 14.5px; margin-bottom: 8px;">We merge all components into a PyTorch module containing word token embedding maps and a positional coordinate encoder.</p>
+                        <p style="font-size: 14.5px; margin-bottom: 8px;">We train the weights on a text corpus for 150 iterations. The loss represents the error between predicted next tokens and target shifted labels.</p>
+                        <div style="background-color: var(--teal-soft); border-left: 4px solid var(--teal-primary); padding: 10px; border-radius: 4px; font-size: 13.5px;">
+                            <strong>Data Flow:</strong> Prompt String $\rightarrow$ Token IDs $\rightarrow$ Model Prediction Logits $\rightarrow$ Argmax Token ID $\rightarrow$ Decoded Word output.
+                        </div>
+                    </div>
+                    <div style="background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <h4 style="color: var(--navy-dark); font-size: 16px; margin-bottom: 8px;"><i class="fa-solid fa-comments" style="color: var(--teal-primary); margin-right: 8px;"></i> Autoregressive Prompt Interaction</h4>
+                        <ol style="font-size: 14px; padding-left: 20px; color: var(--text-muted);">
+                            <li>Run the training cell in <strong>Part 5</strong> of the Colab notebook.</li>
+                            <li style="margin-top: 6px;">Feed a custom prompt like <code>"i love"</code> or <code>"transformers are"</code>.</li>
+                            <li style="margin-top: 6px;">Watch the model predict tokens in a loop, writing its own completions!</li>
+                        </ol>
+                        <p style="font-size: 12.5px; margin-top: 10px; font-style: italic; color: var(--text-muted);">This mirrors the exact autoregressive loop used by ChatGPT and Claude.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Baby-GPT</span>
+            </div>
+        </div>
+
+        <!-- Slide 22: Google Colab Setup -->
+        <div class="slide-container" id="slide22" data-title="Google Colab Deployment">
+            <canvas class="slide-canvas"></canvas>
+            <h2 class="slide-title">Sharing & Run-Anywhere Workshop Deployment <span class="badge">Best Practices</span></h2>
+            <div class="content-area">
+                <div class="two-column align-top">
+                    <div>
+                        <h3 style="color: var(--teal-primary); margin-bottom: 12px;">The Google Colab Strategy</h3>
+                        <p style="margin-bottom: 10px;">To ensure a frictionless participant experience, deliver the code in a single interactive Jupyter notebook:</p>
+                        <ul>
+                            <li><strong>No local configuration</strong>: Sidesteps OS and python library errors.</li>
+                            <li><strong>Run instantly</strong>: NumPy is pre-installed in the cloud runtime container.</li>
+                        </ul>
+                    </div>
+                    <div style="background-color: var(--card-bg); border: 1px solid var(--card-border); padding: 25px; border-radius: 12px; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                        <h4 style="color: var(--navy-dark); margin-bottom: 8px;"><i class="fa-solid fa-share-nodes" style="color: var(--teal-primary); margin-right: 8px;"></i> Sharing Instructions</h4>
+                        <ol style="font-size: 14.5px; padding-left: 20px;">
+                            <li>Upload the file <code>day1_mini_transformer_scratch_student.ipynb</code> to Google Drive.</li>
+                            <li style="margin-top: 6px;">Set permissions to "Anyone with link can view".</li>
+                            <li style="margin-top: 6px;">Participants can open it directly in Google Colab, save a copy, and run cells in the browser.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Lab Delivery</span>
+            </div>
+        </div>
+
+        <!-- Slide 23: Q&A and wrap -->
+        <div class="slide-container" id="slide23" data-title="Q&A & wrap">
+            <canvas class="slide-canvas"></canvas>
+            <div class="content-area">
+                <div class="qa-layout">
+                    <h2>Questions & Discussion</h2>
+                    <p style="font-size: 24px; color: var(--teal-primary); font-weight: 600; margin-top: 10px;">Module 1, 2, and 3 Review & Discussion</p>
+                    <div class="contact-info">
+                        <strong>Thank You for Day 1!</strong><br>
+                        Ready to transition to Day 2 Classical Machine Learning & Demand Forecasting.
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+                <span class="right">Questions</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls Bottom Bar -->
+    <div class="controls-bar">
+        <div class="control-group">
+            <button class="control-btn" id="drawerToggleBtn"><i class="fa-solid fa-list-ul"></i> Index</button>
+            <button class="control-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+            <span class="slide-counter" id="slideCounter">Slide 1 of 23</span>
+            <button class="control-btn" id="nextBtn">Next <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        
+        <div class="control-group">
+            <button class="control-btn" id="laserBtn"><i class="fa-solid fa-circle-radiation"></i> Laser Pointer (L)</button>
+            <button class="control-btn" id="penBtn"><i class="fa-solid fa-pen-fancy"></i> Draw (P)</button>
+            <button class="control-btn" id="clearPenBtn"><i class="fa-solid fa-eraser"></i> Clear Drawings</button>
+            <button class="control-btn" id="overviewBtn"><i class="fa-solid fa-table-cells-large"></i> Grid View</button>
+            <button class="control-btn" id="themeBtn"><i class="fa-solid fa-circle-half-stroke"></i> Theme</button>
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation Drawer -->
+    <div class="slide-drawer" id="slideDrawer">
+        <div class="drawer-header">
+            <h3>Table of Contents</h3>
+            <button class="drawer-close" id="drawerCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <ul class="drawer-list" id="drawerList">
+            <!-- Dynamically populated -->
+        </ul>
+    </div>
+
+    <!-- Floating Red Laser Pointer -->
+    <div class="laser-pointer-dot" id="laserPointerDot"></div>
+
+</div>
+
+<script>
+    // Configuration & State
+    let currentSlide = 1;
+    const slides = document.querySelectorAll('.slide-container');
+    const totalSlides = slides.length;
+    
+    // Tools State
+    let laserActive = false;
+    let penActive = false;
+    let overviewMode = false;
+    
+    // Canvas Annotation Storage per slide
+    const canvases = {};
+    const contexts = {};
+    const drawingState = {}; // Store paths to redraw on resize
+    
+    // Initialize DOM References
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slideCounter = document.getElementById('slideCounter');
+    const laserBtn = document.getElementById('laserBtn');
+    const penBtn = document.getElementById('penBtn');
+    const clearPenBtn = document.getElementById('clearPenBtn');
+    const overviewBtn = document.getElementById('overviewBtn');
+    const themeBtn = document.getElementById('themeBtn');
+    const presentationContainer = document.getElementById('presentationContainer');
+    const slidesViewport = document.getElementById('slidesViewport');
+    const laserPointerDot = document.getElementById('laserPointerDot');
+    const slideDrawer = document.getElementById('slideDrawer');
+    const drawerToggleBtn = document.getElementById('drawerToggleBtn');
+    const drawerCloseBtn = document.getElementById('drawerCloseBtn');
+    const drawerList = document.getElementById('drawerList');
+
+    // Slide Navigation
+    function goToSlide(index) {
+        if (index < 1 || index > totalSlides) return;
+        
+        // Handle class updates
+        slides.forEach((slide, idx) => {
+            const slideNum = idx + 1;
+            slide.classList.remove('active', 'previous');
+            if (slideNum < index) {
+                slide.classList.add('previous');
+            }
+        });
+        
+        slides[index - 1].classList.add('active');
+        currentSlide = index;
+        updateUI();
+        
+        // Resize Canvas if needed
+        initCanvasForSlide(index);
+    }
+
+    // Advance slide helper
+    function nextSlide() {
+        if (currentSlide < totalSlides) {
+            goToSlide(currentSlide + 1);
+        }
+    }
+
+    // Go back slide helper
+    function prevSlide() {
+        if (currentSlide > 1) {
+            goToSlide(currentSlide - 1);
+        }
+    }
+
+    function updateUI() {
+        slideCounter.textContent = `Slide ${currentSlide} of ${totalSlides}`;
+        
+        // Update active class in drawer
+        const drawerItems = document.querySelectorAll('.drawer-item');
+        drawerItems.forEach((item, idx) => {
+            if (idx + 1 === currentSlide) {
+                item.classList.add('active');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        
+        // Check if drawing mode is active on slide container
+        slides.forEach((slide, idx) => {
+            if (idx + 1 === currentSlide && penActive) {
+                slide.classList.add('drawing-active');
+            } else {
+                slide.classList.remove('drawing-active');
+            }
+        });
+    }
+
+    // Toggle overview mode
+    function toggleOverview() {
+        overviewMode = !overviewMode;
+        if (overviewMode) {
+            presentationContainer.classList.add('overview-active');
+            // Disable laser and drawing tools in overview
+            if (laserActive) toggleLaser();
+            if (penActive) togglePen();
+        } else {
+            presentationContainer.classList.remove('overview-active');
+            // Re-scale slide viewport
+            scaleViewport();
+            goToSlide(currentSlide);
+        }
+        overviewBtn.classList.toggle('active', overviewMode);
+    }
+
+    // Dynamic responsive scaling for slide viewport
+    function scaleViewport() {
+        if (overviewMode) return;
+        const width = 1280;
+        const height = 720;
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight - 85; // Reserve height for footer controls
+        const scaleX = windowWidth / width;
+        const scaleY = windowHeight / height;
+        const scale = Math.min(scaleX, scaleY, 1.25); // Limit scaling to prevent pixelation
+        slidesViewport.style.transform = `scale(${scale})`;
+    }
+
+    // Laser Pointer Logic
+    function toggleLaser() {
+        laserActive = !laserActive;
+        laserBtn.classList.toggle('active', laserActive);
+        if (laserActive) {
+            if (penActive) togglePen(); // Deactivate drawing mode
+            slidesViewport.style.cursor = 'none';
+            laserPointerDot.style.display = 'block';
+        } else {
+            slidesViewport.style.cursor = 'default';
+            laserPointerDot.style.display = 'none';
+        }
+    }
+
+    // Capture global mouse movements and center red dot
+    function moveLaser(e) {
+        if (!laserActive) return;
+        laserPointerDot.style.left = `${e.clientX}px`;
+        laserPointerDot.style.top = `${e.clientY}px`;
+    }
+
+    // Whiteboard Canvas Drawing Logic
+    function togglePen() {
+        penActive = !penActive;
+        penBtn.classList.toggle('active', penActive);
+        
+        slides.forEach((slide, idx) => {
+            if (idx + 1 === currentSlide && penActive) {
+                slide.classList.add('drawing-active');
+            } else {
+                slide.classList.remove('drawing-active');
+            }
+        });
+        
+        if (penActive) {
+            if (laserActive) toggleLaser(); // Deactivate laser pointer
+        }
+    }
+
+    function initCanvasForSlide(slideIndex) {
+        const slideId = `slide${slideIndex}`;
+        const slideContainer = document.getElementById(slideId);
+        const canvas = slideContainer.querySelector('.slide-canvas');
+        if (!canvas || canvases[slideId]) return;
+        
+        // Establish dimensions matches slide presentation coordinate system
+        canvas.width = 1280;
+        canvas.height = 720;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#ef4444'; // Red drawing line
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        canvases[slideId] = canvas;
+        contexts[slideId] = ctx;
+        drawingState[slideId] = [];
+        
+        // Handle Pointer drawing operations
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        
+        // Helper to convert screen clicks to raw 1280x720 coordinates
+        function getCanvasCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Accounts for CSS scaling transformations on the container
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+        
+        canvas.addEventListener('pointerdown', (e) => {
+            if (!penActive) return;
+            isDrawing = true;
+            const coords = getCanvasCoordinates(e);
+            lastX = coords.x;
+            lastY = coords.y;
+            
+            // Record path start
+            drawingState[slideId].push({ type: 'start', x: lastX, y: lastY });
+        });
+        
+        canvas.addEventListener('pointermove', (e) => {
+            if (!isDrawing || !penActive) return;
+            const coords = getCanvasCoordinates(e);
+            const currentX = coords.x;
+            const currentY = coords.y;
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+            
+            // Record path stroke
+            drawingState[slideId].push({ type: 'line', x: currentX, y: currentY });
+            
+            lastX = currentX;
+            lastY = currentY;
+        });
+        
+        canvas.addEventListener('pointerup', () => { isDrawing = false; });
+        canvas.addEventListener('pointerout', () => { isDrawing = false; });
+    }
+
+    function clearSlideDrawings() {
+        const slideId = `slide${currentSlide}`;
+        const canvas = canvases[slideId];
+        const ctx = contexts[slideId];
+        if (canvas && ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawingState[slideId] = [];
+        }
+    }
+
+    // Populate Slide Index Drawer
+    function buildDrawerList() {
+        drawerList.innerHTML = '';
+        slides.forEach((slide, idx) => {
+            const title = slide.getAttribute('data-title') || `Slide ${idx + 1}`;
+            const item = document.createElement('li');
+            item.className = `drawer-item ${idx + 1 === currentSlide ? 'active' : ''}`;
+            item.innerHTML = `<span class="num">${idx + 1}</span> ${title}`;
+            item.addEventListener('click', () => {
+                goToSlide(idx + 1);
+                toggleDrawer(false);
+                if (overviewMode) toggleOverview();
+            });
+            drawerList.appendChild(item);
+        });
+    }
+
+    function toggleDrawer(force) {
+        const isOpen = slideDrawer.classList.contains('open');
+        const nextState = force !== undefined ? force : !isOpen;
+        slideDrawer.classList.toggle('open', nextState);
+    }
+
+    // Keyboard controls
+    function handleKeyDown(e) {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+            nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
+            prevSlide();
+        } else if (e.key.toLowerCase() === 'l') {
+            toggleLaser();
+        } else if (e.key.toLowerCase() === 'p') {
+            togglePen();
+        } else if (e.key === 'Escape') {
+            if (slideDrawer.classList.contains('open')) {
+                toggleDrawer(false);
+            } else {
+                toggleOverview();
+            }
+        }
+    }
+
+    // Initialize Event Listeners
+    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', nextSlide);
+    laserBtn.addEventListener('click', toggleLaser);
+    penBtn.addEventListener('click', togglePen);
+    clearPenBtn.addEventListener('click', clearSlideDrawings);
+    overviewBtn.addEventListener('click', toggleOverview);
+    drawerToggleBtn.addEventListener('click', () => toggleDrawer());
+    drawerCloseBtn.addEventListener('click', () => toggleDrawer(false));
+    
+    // Global Event handlers
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', scaleViewport);
+    window.addEventListener('pointermove', moveLaser);
+
+    // Theme Toggle
+    themeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+    });
+
+    // Overview Mode Slide Clicks
+    slides.forEach((slide, idx) => {
+        slide.addEventListener('click', (e) => {
+            if (overviewMode) {
+                goToSlide(idx + 1);
+                toggleOverview();
+                e.stopPropagation();
+            }
+        });
+    });
+
+    // Application Bootstrap Setup
+    window.addEventListener('DOMContentLoaded', () => {
+        scaleViewport();
+        buildDrawerList();
+        initCanvasForSlide(1);
+        updateUI();
+    });
+
+</script>
+</body>
+</html>
