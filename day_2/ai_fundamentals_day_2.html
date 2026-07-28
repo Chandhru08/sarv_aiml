@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Fundamentals - Day 2 Presentation Deck</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Fira+Code:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<!-- Polyfill and MathJax for LaTeX Rendering -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+<script async="" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+        :root {
+            --navy-dark: #0a192f;
+            --navy-deep: #020617;
+            --teal-primary: #008080;
+            --teal-dark: #005f5f;
+            --teal-light: #e0f2f1;
+            --teal-soft: #e6f4f1;
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+            --bg-slide: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: #cbd5e1;
+            --accent-glow: rgba(0, 128, 128, 0.15);
+            --laser-glow: rgba(239, 68, 68, 0.8);
+            --header-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --navy-dark: #f8fafc;
+            --navy-deep: #020617;
+            --teal-primary: #2dd4bf;
+            --teal-dark: #14b8a6;
+            --teal-light: #115e59;
+            --teal-soft: #042f2e;
+            --text-dark: #cbd5e1;
+            --text-muted: #94a3b8;
+            --bg-slide: #0b1329;
+            --card-bg: #111b36;
+            --card-border: #1e293b;
+            --accent-glow: rgba(45, 212, 191, 0.15);
+            --header-bg: #111b36;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--navy-deep);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Presentation Wrapper */
+        .presentation-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding-bottom: 0;
+        }
+
+        .slides-viewport {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background-color: var(--navy-deep);
+            transition: transform 0.3s ease;
+        }
+
+        /* Single Slide Container */
+        .slide-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-slide);
+            padding: 40px 55px 65px 55px; /* Added extra bottom padding to clear the footer */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(100px);
+            transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+
+        .slide-container.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            z-index: 2;
+        }
+
+        .slide-container.previous {
+            transform: translateX(-100px);
+        }
+
+        /* Top Accent Bar */
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--teal-dark) 0%, var(--teal-primary) 100%);
+            z-index: 5;
+        }
+
+        /* Slide Footer Branding */
+        .slide-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 55px;
+            right: 55px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--card-border);
+            padding-top: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .slide-footer span.left {
+            color: var(--text-muted);
+        }
+
+        .slide-footer span.right {
+            font-weight: 600;
+            color: var(--teal-primary);
+        }
+
+        /* Navigation & Sketch Canvas */
+        .slide-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            cursor: crosshair;
+        }
+
+        .slide-container.drawing-active .slide-canvas {
+            pointer-events: auto;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--navy-dark);
+            line-height: 1.25;
+        }
+
+        .slide-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 22px;
+            text-align: left;
+            border-bottom: 2px solid var(--teal-light);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 3;
+            position: relative;
+        }
+
+        .slide-title span.badge {
+            font-size: 13px;
+            font-weight: 600;
+            background-color: var(--teal-primary);
+            color: #ffffff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        p, li, th, td {
+            font-size: 16px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: center;
+            width: 100%;
+            z-index: 3;
+            position: relative;
+            height: calc(100% - 95px); /* Adjusted to balance header + footer height */
+        }
+
+        /* Dual Logos Branding */
+        .header-logos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .academy-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .partner-logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Title Slide Layout */
+        .title-layout {
+            text-align: center;
+            margin: auto;
+            max-width: 950px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .title-layout .tag {
+            display: inline-block;
+            background-color: var(--teal-primary);
+            color: #ffffff;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .title-layout h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--navy-dark);
+            margin-bottom: 12px;
+        }
+
+        .title-layout .subtitle {
+            font-size: 22px;
+            color: var(--teal-dark);
+            font-weight: 500;
+            margin-bottom: 25px;
+        }
+
+        .title-layout .meta-info {
+            font-size: 15px;
+            color: var(--text-muted);
+            background-color: var(--card-bg);
+            padding: 10px 25px;
+            border-radius: 30px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        /* Agenda Layout */
+        .agenda-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .agenda-card {
+            background-color: var(--card-bg);
+            border-left: 5px solid var(--teal-primary);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-top: 1px solid var(--card-border);
+            border-right: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .agenda-card .time {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--teal-primary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .agenda-card h3 {
+            font-size: 18px;
+            color: var(--navy-dark);
+            margin-bottom: 8px;
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .two-column.tiled > div {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            padding: 24px;
+            height: 100%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .two-column.tiled h3 {
+            font-size: 19px;
+            color: var(--teal-primary);
+            margin-bottom: 12px;
+        }
+
+        .two-column.align-top {
+            align-items: start;
+        }
+
+        /* Image/Visual Wrapper */
+        .image-wrapper {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            height: 380px;
+            width: 100%;
+            background-color: var(--card-bg);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Tiled Content with Icons */
+        .tiled-content {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .tile {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            flex: 1;
+            padding: 25px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tile .icon {
+            color: var(--teal-primary);
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .tile h3 {
+            font-size: 19px;
+            color: var(--navy-dark);
+            margin-bottom: 10px;
+        }
+
+        /* Concentric Circles Diagram Layout (Concept 03) */
+        .nested-ai-layout {
+            display: grid;
+            grid-template-columns: 45% 52%;
+            gap: 30px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .concentric-wrapper {
+            position: relative;
+            width: 440px;
+            height: 440px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .circle-ai {
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            border: 2.5px dashed var(--navy-dark);
+            background-color: var(--teal-soft);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 15px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+        }
+
+        .circle-ml {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            border: 2px solid var(--teal-primary);
+            background-color: var(--teal-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 15px;
+            position: absolute;
+            top: 48px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .circle-dl {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 2px solid var(--teal-dark);
+            background-color: #80cbc4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 15px;
+            position: absolute;
+            top: 48px;
+        }
+
+        body.dark-mode .circle-dl {
+            background-color: #004d40;
+        }
+
+        .circle-genai {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: var(--navy-dark);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            text-align: center;
+            font-size: 13px;
+            position: absolute;
+            top: 48px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+        }
+
+        body.dark-mode .circle-genai {
+            background-color: var(--teal-primary);
+            color: var(--navy-deep);
+        }
+
+        .circle-label-top {
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--navy-dark);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nested-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nested-cards .nested-card {
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid transparent;
+        }
+
+        .nested-card.ai-card {
+            background-color: var(--teal-soft);
+            border-color: var(--teal-light);
+        }
+
+        .nested-card.ml-card {
+            background-color: var(--teal-light);
+            border-color: #80cbc4;
+        }
+
+        body.dark-mode .nested-card.ml-card {
+            background-color: var(--teal-soft);
+            border-color: var(--teal-dark);
+        }
+
+        .nested-card.dl-card {
+            background-color: #b2dfdb;
+            border-color: #4db6ac;
+        }
+
+        body.dark-mode .nested-card.dl-card {
+            background-color: #004d40;
+            border-color: var(--teal-dark);
+        }
+
+        .nested-card.genai-card {
+            background-color: var(--navy-dark);
+            color: #ffffff;
+        }
+
+        body.dark-mode .nested-card.genai-card {
+            background-color: #1e293b;
+        }
+
+        .nested-card h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .nested-card.genai-card h3 {
+            color: var(--teal-primary);
+        }
+
+        .nested-card p {
+            font-size: 13.5px;
+            line-height: 1.4;
+        }
+
+        /* Formula Card Styling */
+        .formula-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            text-align: center;
+        }
+
+        .formula-display {
+            font-size: 19px;
+            margin: 8px 0;
+            color: var(--navy-dark);
+        }
+
+        .formula-card p.caption {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        /* Transformer Flow Stack */
+        .transformer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .stack-box {
+            background-color: var(--card-bg);
+            border: 1.5px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 18px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+            transition: all 0.2s;
+        }
+
+        .stack-box.dark {
+            background-color: var(--navy-dark);
+            color: var(--bg-slide);
+            border: none;
+        }
+
+        .stack-box.teal {
+            background-color: var(--teal-primary);
+            color: #ffffff;
+            border: none;
+        }
+
+        .stack-box h4 {
+            font-size: 14.5px;
+            margin-bottom: 2px;
+        }
+
+        .stack-box.dark h4 {
+            color: var(--teal-primary);
+        }
+
+        .stack-box.teal h4 {
+            color: #ffffff;
+        }
+
+        .stack-box p {
+            font-size: 12px;
+            color: inherit;
+            opacity: 0.85;
+            line-height: 1.4;
+        }
+
+        .stack-caption {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* Lab Step Cards */
+        .lab-step-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 25px;
+            height: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border-top: 5px solid var(--teal-primary);
+        }
+
+        .lab-step-card h3 {
+            font-size: 20px;
+            color: var(--navy-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lab-step-card code {
+            font-size: 13.5px;
+        }
+
+        /* Section Intro Page */
+        .section-slide-layout {
+            text-align: center;
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .section-slide-layout .tag {
+            background-color: var(--navy-dark);
+            color: #ffffff;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        body.dark-mode .section-slide-layout .tag {
+            background-color: var(--teal-primary);
+            color: var(--navy-deep);
+        }
+
+        .section-slide-layout h2 {
+            font-size: 44px;
+            color: var(--navy-dark);
+            margin: 15px 0;
+        }
+
+        .section-slide-layout hr {
+            border: none;
+            height: 4px;
+            background: linear-gradient(90deg, var(--navy-dark), var(--teal-primary));
+            width: 120px;
+            margin: 25px auto;
+            border-radius: 2px;
+        }
+
+        /* Q&A Layout */
+        .qa-layout {
+            text-align: center;
+            margin: auto;
+            max-width: 850px;
+        }
+
+        .qa-layout h2 {
+            font-size: 54px;
+            color: var(--navy-dark);
+            margin-bottom: 15px;
+        }
+
+        .qa-layout .contact-info {
+            margin-top: 30px;
+            font-size: 18px;
+            color: var(--text-muted);
+            background-color: var(--teal-soft);
+            padding: 18px;
+            border-radius: 10px;
+            border: 1px solid var(--teal-primary);
+        }
+
+        /* Controls Bottom Bar */
+        .controls-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: var(--header-bg);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 100;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+
+        .controls-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-btn {
+            background: none;
+            border: 1px solid var(--card-border);
+            color: var(--navy-dark);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--teal-soft);
+            border-color: var(--teal-primary);
+            color: var(--teal-dark);
+        }
+
+        .control-btn.active {
+            background-color: var(--teal-primary);
+            color: #ffffff;
+            border-color: var(--teal-primary);
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        /* Overview Mode Grid Styles */
+        .presentation-container.overview-active {
+            overflow-y: auto;
+            padding: 40px;
+            justify-content: flex-start;
+        }
+
+        .presentation-container.overview-active .slides-viewport {
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            transform: none !important;
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .presentation-container.overview-active .slide-container {
+            position: relative;
+            width: 100% !important;
+            height: 180px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+            cursor: pointer;
+            border: 3px solid var(--card-border);
+            border-radius: 12px;
+            transition: all 0.2s;
+            padding: 10px;
+            overflow: hidden;
+            user-select: none;
+            background-color: var(--bg-slide);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .presentation-container.overview-active .slide-container.active {
+            border-color: var(--teal-primary);
+            box-shadow: 0 0 15px var(--teal-primary);
+        }
+
+        .presentation-container.overview-active .slide-container:hover {
+            border-color: var(--teal-dark);
+            transform: translateY(-4px);
+        }
+
+        /* Scale contents in overview mode */
+        .presentation-container.overview-active .slide-container > * {
+            transform: scale(0.25);
+            transform-origin: top left;
+            width: 400% !important;
+            height: 400% !important;
+            pointer-events: none;
+        }
+
+        .presentation-container.overview-active .slide-canvas {
+            display: none !important;
+        }
+
+        .presentation-container.overview-active .controls-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: var(--header-bg);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 100;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+
+        .controls-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Sidebar Slide Drawer */
+        .slide-drawer {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100%;
+            background-color: var(--header-bg);
+            border-right: 1px solid var(--card-border);
+            z-index: 101;
+            transition: left 0.3s ease;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-drawer.open {
+            left: 0;
+        }
+
+        .drawer-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-header h3 {
+            font-size: 18px;
+            color: var(--navy-dark);
+        }
+
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .drawer-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .drawer-list .drawer-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .drawer-list .drawer-item:hover {
+            background-color: var(--teal-soft);
+            color: var(--teal-dark);
+        }
+
+        .drawer-list .drawer-item.active {
+            background-color: var(--teal-primary);
+            color: #ffffff;
+        }
+
+        .drawer-list .drawer-item span.num {
+            font-size: 12px;
+            font-weight: 700;
+            background-color: rgba(0,0,0,0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .drawer-list .drawer-item.active span.num {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* Floating Laser Pointer Dot */
+        .laser-pointer-dot {
+            position: fixed;
+            width: 14px;
+            height: 14px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0 8px #ef4444, 0 0 15px #ef4444, 0 0 25px #ef4444;
+            transform: translate(-50%, -50%);
+        }
+
+        ul {
+            list-style: square;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--card-border);
+            margin: 15px 0;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: var(--teal-soft);
+            color: var(--teal-dark);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="presentation-container" id="presentationContainer">
+<div class="slides-viewport" id="slidesViewport"><!-- Slide 1: Title Slide --><div class="slide-container active" data-title="Title Slide" id="slide1">
+<canvas class="slide-canvas"></canvas>
+<div class="header-logos">
+<div class="academy-logo">
+<img alt="Sarveshwar Academy Logo" src="sarveshwar_logo.png" style="height: 60px; width: auto; object-fit: contain;"/>
+</div>
+<div class="partner-logo-container">
+<img alt="Partner University Logo" src="partner_logo.jpg" style="height: 60px; width: auto; object-fit: contain; border-radius: 8px; border: 1px solid var(--card-border);"/>
+</div>
+</div>
+<div class="content-area">
+<div class="title-layout">
+<span class="tag">FACULTY DEVELOPMENT PROGRAM</span>
+<h1>Real-World ML Kickstart &amp; Open-Source Ecosystems</h1>
+<p class="subtitle">Day 2: Kaggle Pipelines, Hugging Face Embeddings, Classical Classifier Training, &amp; Ollama Zero-Shot Benchmarking</p>
+<div class="meta-info">
+<i class="fa-solid fa-laptop-code" style="color: var(--teal-primary); margin-right: 6px;"></i> Live Hands-on Project Sourcing, Feature Engineering, and Model Comparison
+                    </div>
+</div>
+</div>
+</div><!-- Slide 2: Curriculum Agenda --><div class="slide-container" data-title="Day 2 Curriculum" id="slide2">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">E-commerce Ticket Routing: End-to-End Flow <span class="badge">Day 2 Agenda</span></h2>
+<div class="content-area">
+<div class="agenda-grid">
+<div class="agenda-card">
+<div class="time">Module 1</div>
+<h3>Kaggle Ingestion &amp; Preprocessing</h3>
+<ul style="margin-top: 8px; list-style-type: disc; padding-left: 20px; font-size: 13.5px; color: var(--text-muted);">
+<li><strong>Theory:</strong> Programmatic API Sourcing, case folding, category balancing.</li>
+<li><strong>Hands-on:</strong> Pulling reviews via Kaggle API and preparing pandas pipelines.</li>
+</ul>
+</div>
+<div class="agenda-card">
+<div class="time">Module 2</div>
+<h3>TF-IDF vs. HF Embeddings</h3>
+<ul style="margin-top: 8px; list-style-type: disc; padding-left: 20px; font-size: 13.5px; color: var(--text-muted);">
+<li><strong>Theory:</strong> Sparse statistical words vs. dense multi-dimensional semantic vectors.</li>
+<li><strong>Hands-on:</strong> Generating coordinates locally using Hugging Face transformers.</li>
+</ul>
+</div>
+<div class="agenda-card">
+<div class="time">Module 3</div>
+<h3>Supervised Classification &amp; Metrics</h3>
+<ul style="margin-top: 8px; list-style-type: disc; padding-left: 20px; font-size: 13.5px; color: var(--text-muted);">
+<li><strong>Theory:</strong> SVM hyperplanes, margin math. Precision, Recall, F1-scores.</li>
+<li><strong>Hands-on:</strong> Training SVC models and routing test reviews.</li>
+</ul>
+</div>
+<div class="agenda-card" style="border-left-color: var(--navy-dark);">
+<div class="time" style="color: var(--navy-dark);">Modules 4 &amp; 5</div>
+<h3>Clustering &amp; Ollama Zero-Shot</h3>
+<ul style="margin-top: 8px; list-style-type: disc; padding-left: 20px; font-size: 13.5px; color: var(--navy-dark);">
+<li><strong>Theory:</strong> KMeans centroid grouping, Ollama JSON prompt schemas.</li>
+<li><strong>Hands-on:</strong> Outlier spammers isolation and local LLM zero-shot routing.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Course Agenda</span>
+</div>
+</div><!-- Slide 3: Module 1 Intro --><div class="slide-container" data-title="Module 1: Kaggle &amp; Data Ingestion" id="slide3">
+<canvas class="slide-canvas"></canvas>
+<div class="content-area">
+<div class="section-slide-layout">
+<span class="tag">MODULE 1</span>
+<h2>Kaggle API &amp; Real-World Dataset Sourcing</h2>
+<hr/>
+<p>Moving away from basic hardcoded lists. Real-world project workflows start with automated data fetching, preprocessing, class balancing, and ingestion pipelines.</p>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 1 | Data Sourcing</span>
+</div>
+</div><!-- Slide 4: Data Engineering Theory --><div class="slide-container" data-title="Data Engineering Theory" id="slide4">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Theory: Ingestion &amp; Text Preprocessing <span class="badge">Critical Theory</span></h2>
+<div class="content-area">
+<div class="two-column tiled">
+<div>
+<h3 style="color: var(--teal-primary); margin-bottom: 8px;">Text Cleaning &amp; Normalization</h3>
+<ul style="list-style-type: square; padding-left: 20px;">
+<li><strong>Case Folding:</strong> Converting all characters to lowercase prevents the model from treating "Returns" and "returns" as distinct tokens.</li>
+<li><strong>Null Handling:</strong> Empty reviews or non-textual input fields cause crashes in vectorizers. They must be isolated and pruned.</li>
+<li><strong>Noise Removal:</strong> Pruning HTML markup tags, excessive punctuation, and formatting symbols.</li>
+</ul>
+</div>
+<div>
+<h3 style="color: var(--teal-primary); margin-bottom: 8px;">The Imbalanced Class Danger</h3>
+<p style="margin-bottom: 12px;">Real-world support queues are heavily skewed. If 90% of requests are spam, classifiers learn to ignore minority classes (like refunds).</p>
+<div class="formula-card" style="background-color: var(--teal-soft); border-color: var(--teal-light);">
+<strong>Imbalance Solution:</strong> Stratified splitting guarantees that train and test distributions represent equal proportions of every class label.
+                        </div>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 1 | Data Sourcing</span>
+</div>
+</div><!-- Slide 5: Kaggle API Sourcing --><div class="slide-container" data-title="Programmatic Sourcing" id="slide5">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Programmatic Sourcing: Moving from Toy Datasets to Industry Benchmarks <span class="badge">API Workflow</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<p>In industry, data is rarely in local directories. We configure credentials and fetch programmatically to build repeatable pipelines.</p>
+<ul style="margin-top: 15px; list-style-type: square; padding-left: 20px;">
+<li><strong>Authenticity:</strong> Sourced programmatically directly from open platforms.</li>
+<li><strong>Automation:</strong> Clean python scripts to download, extract, and convert CSVs.</li>
+<li><strong>Traceability:</strong> Code documents the exact lineage of raw project inputs.</li>
+</ul>
+</div>
+<div style="background-color: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--card-border);">
+<h4 style="color: var(--teal-primary); margin-bottom: 10px;"><i class="fa-solid fa-code"></i> Ingestion Snippet</h4>
+<pre style="font-family: 'Fira Code', monospace; font-size: 11.5px; line-height: 1.4; color: var(--text-dark); overflow-x: auto; background-color: var(--teal-soft); padding: 12px; border-radius: 8px;">
+from kaggle.api.kaggle_api_extended import KaggleApi
+
+api = KaggleApi()
+api.authenticate()
+# Downloads zip directly to /data folder
+api.dataset_download_files(
+    'consumer-reviews-of-amazon',
+    path='./data', unzip=True
+)</pre>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 1 | Data Sourcing</span>
+</div>
+</div><!-- Slide 6: Hands-on Lab 1 --><div class="slide-container" data-title="Lab 1: Data Ingestion" id="slide6">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Hands-on Lab 1: Ingestion &amp; Preprocessing Pipeline <span class="badge">Lab Session</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div class="lab-step-card">
+<h3><i class="fa-solid fa-terminal" style="color: var(--teal-primary);"></i> Step 1: Install &amp; Config</h3>
+<p style="font-size: 14px; margin-bottom: 10px;">Run in shell:</p>
+<code style="display: block; margin-bottom: 12px;">pip install kaggle pandas numpy</code>
+<p style="font-size: 14px;">Generate API key in Kaggle Settings -&gt; Downloads <code>kaggle.json</code>. Place in:</p>
+<code style="display: block; margin-top: 5px;">~/.kaggle/kaggle.json</code>
+</div>
+<div class="lab-step-card" style="border-top-color: var(--navy-dark);">
+<h3><i class="fa-solid fa-file-code" style="color: var(--navy-dark);"></i> Step 2: Run download_data.py</h3>
+<p style="font-size: 14px; margin-bottom: 10px;">Executes credential verification, checks connectivity, and builds our routing dataset with 4 categories:</p>
+<p style="font-size: 13.5px; font-weight: 600; color: var(--teal-primary); margin-left: 10px;">- Shipping<br/>- Refunds<br/>- Product Quality<br/>- Account Access</p>
+<code style="display: block; margin-top: 12px;">python src/download_data.py</code>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 1 | Data Sourcing</span>
+</div>
+</div><!-- Slide 7: Module 2 Intro --><div class="slide-container" data-title="Module 2: TF-IDF vs HF Embeddings" id="slide7">
+<canvas class="slide-canvas"></canvas>
+<div class="content-area">
+<div class="section-slide-layout">
+<span class="tag">MODULE 2</span>
+<h2>The Text Representation Battle: TF-IDF vs. Hugging Face</h2>
+<hr/>
+<p>How do computers analyze human language? We compare classical statistical sparse matrices (TF-IDF) against modern dense deep learning semantic coordinates from Hugging Face Hub.</p>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 2 | Text Representations</span>
+</div>
+</div><!-- Slide 8: Sparse vs Dense Theory --><div class="slide-container" data-title="Sparse vs Dense Matrix" id="slide8">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Sparse Vector (TF-IDF) vs. Dense Semantic Embeddings <span class="badge">Feature Design</span></h2>
+<div class="content-area">
+<div class="two-column tiled">
+<div>
+<h3 style="color: var(--teal-primary); margin-bottom: 8px;">Sparse Matrix (TF-IDF)</h3>
+<p style="font-size: 14.5px; margin-bottom: 10px;">Represents text by tracking exact word occurrences across documents. Dimensionality increases with vocabulary size.</p>
+<div class="formula-card" style="font-size: 14px; padding: 10px; background-color: var(--teal-soft); border-color: var(--teal-light);">
+                            $\text{TF-IDF}(t, d) = \text{TF}(t, d) \times \text{IDF}(t)$
+                        </div>
+<p style="font-size: 13.5px; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> <strong>Failure:</strong> Sentence "A" and "B" sharing zero words result in <strong>0.00</strong> similarity, even if they mean the exact same thing!</p>
+</div>
+<div>
+<h3 style="color: var(--teal-primary); margin-bottom: 8px;">Dense Vector (HF Embeddings)</h3>
+<p style="font-size: 14.5px; margin-bottom: 10px;">Encodes semantic meaning into fixed-size real numbers (e.g., 384 dimensions) using transformer models.</p>
+<div class="formula-card" style="font-size: 14px; padding: 10px; background-color: var(--teal-soft); border-color: var(--teal-light);">
+                            $\text{Embedding}(S) \in \mathbb{R}^{384 \text{ dimensions}}$
+                        </div>
+<p style="font-size: 13.5px; color: var(--teal-dark);"><i class="fa-solid fa-circle-check"></i> <strong>Strength:</strong> "Late delivery" and "Package didn't arrive" map to close coordinates, returning high cosine similarity.</p>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 2 | Text Representations</span>
+</div>
+</div><!-- Slide 9: Visualizing TF-IDF Sparse Representation (New Image Slide) --><div class="slide-container" data-title="TF-IDF Visualization" id="slide9">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Visualizing TF-IDF Sparse Vector Representation <span class="badge">Concept Visualization</span></h2>
+<div class="content-area">
+<div class="two-column align-top" style="grid-template-columns: 45% 52%;">
+<div>
+<h4 style="color: var(--navy-dark); margin-bottom: 8px;">Sparse Words Matrix</h4>
+<p style="font-size: 14px; line-height: 1.45;">TF-IDF forms a sparse matrix where each row is a document and each column represents a vocabulary word. Cells display calculated statistics.</p>
+<ul style="margin-top: 15px; list-style-type: square; padding-left: 20px; font-size: 13.5px;">
+<li><strong>Zero Overlap Problem:</strong> Missing direct keyword links drops document correlation to 0.</li>
+<li><strong>Memory Bloat:</strong> Column dimensions expand rapidly for large corpora.</li>
+</ul>
+</div>
+<div class="image-wrapper" style="height: 380px; border: 1px solid var(--card-border); background-color: var(--card-bg);">
+<img alt="TF-IDF Sparse Representation Matrix" src="version1/gen-ai-notebook/day2_ml_model_and_handson/assets/TF-IDF.webp" style="width: 100%; height: 100%; object-fit: contain;"/>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 2 | Text Representations</span>
+</div>
+</div><!-- Slide 10: Visualizing Dense Embeddings (New Image Slide) --><div class="slide-container" data-title="Dense Embeddings Visualization" id="slide10">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Visualizing Hugging Face Dense Embeddings <span class="badge">Concept Visualization</span></h2>
+<div class="content-area">
+<div class="two-column align-top" style="grid-template-columns: 45% 52%;">
+<div>
+<h4 style="color: var(--navy-dark); margin-bottom: 8px;">Semantic Vector Space</h4>
+<p style="font-size: 14px; line-height: 1.45;">Dense embeddings map sentences to coordinates. Meaning is encoded as coordinate location. Synonyms and related terms lie close together.</p>
+<ul style="margin-top: 15px; list-style-type: square; padding-left: 20px; font-size: 13.5px;">
+<li><strong>Fixed Dimensions:</strong> Uniform vector lengths (like 384 numbers).</li>
+<li><strong>Continuous space:</strong> Resolves semantic closeness mathematically.</li>
+</ul>
+</div>
+<div class="image-wrapper" style="height: 380px; border: 1px solid var(--card-border); background-color: var(--card-bg);">
+<img alt="Dense Embedding Vector Space Diagram" src="version1/gen-ai-notebook/day2_ml_model_and_handson/assets/dense_v_embedding.webp" style="width: 100%; height: 100%; object-fit: contain;"/>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 2 | Text Representations</span>
+</div>
+</div><!-- Slide 11: Hugging Face Hub Ecosystem --><div class="slide-container" data-title="Hugging Face Hub Ecosystem" id="slide11">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Theory: The Hugging Face Hub Ecosystem <span class="badge">Critical Theory</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<p>Hugging Face Hub acts as the "GitHub of Machine Learning", storing hundreds of thousands of pre-trained models called <strong>checkpoints</strong>.</p>
+<ul style="margin-top: 15px; list-style-type: square; padding-left: 20px;">
+<li><strong>Model Cards:</strong> Readme sheets explaining what data the model was trained on, metrics, and limitations.</li>
+<li><strong>Tokenizers:</strong> Convert raw strings to integer sequences (tokens) that match the model's vocabulary file.</li>
+<li><strong>Sentence Transformers:</strong> Fine-tuned versions of BERT/RoBERTa using <strong>contrastive learning</strong>, forcing similar sentences to lie close in vector space.</li>
+</ul>
+</div>
+<div style="background-color: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--card-border);">
+<h4 style="color: var(--teal-primary); margin-bottom: 6px;"><i class="fa-solid fa-cloud-arrow-down"></i> Local Cache Pipeline</h4>
+<div class="transformer-stack" style="gap: 6px;">
+<div class="stack-box teal" style="padding: 8px 12px;">
+<h4>1. Fetch Checkpoint</h4>
+<p style="font-size: 11.5px;">Downloads config.json and safetensors weights from HF Hub.</p>
+</div>
+<div class="stack-box dark" style="padding: 8px 12px;">
+<h4>2. Run Local Tokenization</h4>
+<p style="font-size: 11.5px;">Splits text into subword IDs using Rust-backed tokenizers.</p>
+</div>
+<div class="stack-box" style="padding: 8px 12px; border-color: var(--teal-primary);">
+<h4>3. Pooling &amp; L2 Normalization</h4>
+<p style="font-size: 11.5px;">Averages token states into a single 384-dimensional unit vector.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 2 | Text Representations</span>
+</div>
+</div><!-- Slide 12: Hugging Face Hub --><div class="slide-container" data-title="Hugging Face API" id="slide12">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Hugging Face Pipeline: local Semantic Encoding <span class="badge">Hugging Face Hub</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<p>We leverage open-source transformer checkpoints. We use the lightweight, fast, yet highly accurate model <code>all-MiniLM-L6-v2</code>.</p>
+<ul style="margin-top: 15px; list-style-type: square; padding-left: 20px;">
+<li><strong>Local Run:</strong> Downloads checkpoint once, then performs zero-network local feature extraction on your CPU/GPU.</li>
+<li><strong>Contextual:</strong> Resolves polysemy (e.g. "charge" billing vs. phone "charge").</li>
+</ul>
+</div>
+<div style="background-color: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--card-border);">
+<h4 style="color: var(--teal-primary); margin-bottom: 10px;"><i class="fa-solid fa-code"></i> Python Pipeline Code</h4>
+<pre style="font-family: 'Fira Code', monospace; font-size: 11px; line-height: 1.4; color: var(--text-dark); overflow-x: auto; background-color: var(--teal-soft); padding: 12px; border-radius: 8px;">
+from sentence_transformers import SentenceTransformer
+
+# Downloads model from Hugging Face Hub
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+# Computes 384-dimensional dense vectors
+embeddings = model.encode([
+    "Package didn't show up.",
+    "Shipment is delayed."
+])</pre>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 2 | Text Representations</span>
+</div>
+</div><!-- Slide 13: Hands-on Lab 2 --><div class="slide-container" data-title="Lab 2: Representation" id="slide13">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Hands-on Lab 2: Extraction &amp; Similarity Battle <span class="badge">Lab Session</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div class="lab-step-card">
+<h3><i class="fa-solid fa-terminal" style="color: var(--teal-primary);"></i> Step 1: Install packages</h3>
+<p style="font-size: 14px; margin-bottom: 10px;">Run in console:</p>
+<code style="display: block; margin-bottom: 12px;">pip install transformers sentence-transformers scikit-learn</code>
+<p style="font-size: 14px;">This installs PyTorch and the tokenizer backend to support local model execution.</p>
+</div>
+<div class="lab-step-card" style="border-top-color: var(--navy-dark);">
+<h3><i class="fa-solid fa-bolt" style="color: var(--navy-dark);"></i> Step 2: Run Comparison</h3>
+<p style="font-size: 14px; margin-bottom: 10px;">Run the extraction script and observe the vector shape outputs and the similarity calculations:</p>
+<code style="display: block; margin-bottom: 8px;">python src/feature_extraction.py</code>
+<p style="font-size: 13.5px; font-style: italic; color: var(--text-muted);">Compare TF-IDF similarity (0.00) vs. Hugging Face embedding similarity (&gt; 0.70) for paraphrased sentences.</p>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 2 | Text Representations</span>
+</div>
+</div><!-- Slide 14: Module 3 Intro --><div class="slide-container" data-title="Module 3: Supervised ML" id="slide14">
+<canvas class="slide-canvas"></canvas>
+<div class="content-area">
+<div class="section-slide-layout">
+<span class="tag">MODULE 3</span>
+<h2>Supervised Classification &amp; Industrial Metrics</h2>
+<hr/>
+<p>Training Classical ML algorithms to separate support tickets into categories using high-dimensional embedding spaces, and learning why simple Accuracy is a dangerous trap in business.</p>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 3 | Classification</span>
+</div>
+</div><!-- Slide 15: SVM Concept --><div class="slide-container" data-title="Linear Classifier SVM" id="slide15">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Supervised Boundaries: Support Vector Machines (SVM) <span class="badge">Algorithm Logic</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<p>How does a computer separate customer reviews? By fitting hyperplanes in high-dimensional vector spaces.</p>
+<ul style="margin-top: 15px; list-style-type: square; padding-left: 20px;">
+<li><strong>Maximum Margin:</strong> SVM finds the hyperplane that maximizes distance (margin) between the nearest data points of different classes (support vectors).</li>
+<li><strong>Linear Kernel:</strong> Excellent for text embeddings because high-dimensional spaces (like 384 dimensions) are almost always linearly separable.</li>
+<li><strong>Efficiency:</strong> Fast to train, highly reliable, and doesn't require millions of parameters.</li>
+</ul>
+</div>
+<div style="background-color: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--card-border);">
+<h4 style="color: var(--teal-primary); margin-bottom: 8px;"><i class="fa-solid fa-chart-line"></i> SVM Hyperplane Boundary</h4>
+<div class="image-wrapper" style="height: 220px; background-color: var(--teal-soft); border-radius: 8px; border: 1px dashed var(--teal-primary);">
+<div style="text-align: center; color: var(--navy-dark); font-size: 14px; font-weight: 600; padding: 20px;">
+                                [ Class A: Shipping ]<br/>
+<span style="font-size: 28px; color: var(--teal-primary);">○ ○ ○</span><br/>
+<span style="display: block; margin: 8px 0; border-top: 2.5px solid #ef4444;">---- Margin Hyperplane Boundary ----</span>
+<span style="font-size: 28px; color: var(--navy-dark);">✖ ✖ ✖</span><br/>
+                                [ Class B: Refunds ]
+                            </div>
+</div>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 3 | Classification</span>
+</div>
+</div><!-- Slide 16: Accuracy Trap --><div class="slide-container" data-title="Real-World Metrics" id="slide16">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Why Simple Accuracy is a Trap in Real Projects <span class="badge">Evaluation Metrics</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<h4 style="color: var(--navy-dark); margin-bottom: 8px;">The Class Imbalance Problem</h4>
+<p style="font-size: 14.5px; line-height: 1.4;">If 95% of incoming tickets are normal spam, and only 5% are billing issues, a dumb model that predicts "spam" for everything has <strong>95% accuracy</strong> but is <strong>100% useless</strong> to your finance team.</p>
+<p style="font-size: 14.5px; margin-top: 12px;">We must evaluate using metrics that account for class distributions.</p>
+</div>
+<div style="background-color: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--card-border);">
+<table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
+<thead>
+<tr style="border-bottom: 2px solid var(--teal-primary);">
+<th style="padding: 8px; color: var(--navy-dark);">Metric</th>
+<th style="padding: 8px; color: var(--navy-dark);">Formula</th>
+<th style="padding: 8px; color: var(--navy-dark);">What it measures</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: 1px solid var(--card-border);">
+<td style="padding: 8px; font-weight: 600;">Precision</td>
+<td style="padding: 8px; font-family: monospace;">TP / (TP + FP)</td>
+<td style="padding: 8px; color: var(--text-muted);">Out of predicted positive, how many were right? (Avoid False Alarms)</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--card-border);">
+<td style="padding: 8px; font-weight: 600;">Recall</td>
+<td style="padding: 8px; font-family: monospace;">TP / (TP + FN)</td>
+<td style="padding: 8px; color: var(--text-muted);">Out of actual positive, how many did we find? (Avoid Misses)</td>
+</tr>
+<tr>
+<td style="padding: 8px; font-weight: 600;">F1-Score</td>
+<td style="padding: 8px; font-family: monospace;">Harmonic Mean</td>
+<td style="padding: 8px; color: var(--text-muted);">Balanced summary of both Precision and Recall.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 3 | Classification</span>
+</div>
+</div><!-- Slide 17: Precision, Recall & F1-Score Numerical Example --><div class="slide-container" data-title="Numerical Metric Example" id="slide17">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Precision, Recall &amp; F1-Score: A Numerical Example <span class="badge">Metric Walkthrough</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<h4 style="color: var(--navy-dark); margin-bottom: 6px;">The Scenario (100 Support Tickets)</h4>
+<p style="font-size: 13.5px; line-height: 1.45; margin-bottom: 10px;">
+                            • <strong>Actual:</strong> 10 Refund Requests (Positive), 90 general inquiries (Negative).<br/>
+                            • <strong>Model Prediction:</strong> Flags 8 tickets as Refunds. Out of these, 6 are correct (TP=6) and 2 are general inquiries (FP=2). The model missed 4 refunds (FN=4).
+                        </p>
+<div class="formula-card" style="background-color: var(--teal-soft); border-color: var(--teal-light); padding: 10px; margin: 4px 0;">
+<strong>TP = 6 | FP = 2 | FN = 4 | TN = 88</strong>
+</div>
+</div>
+<div style="background-color: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--card-border);">
+<ul style="list-style-type: none; padding-left: 0; font-size: 13.5px;">
+<li style="margin-bottom: 8px;">
+<strong style="color: var(--teal-primary);">Precision:</strong> $rac{TP}{TP + FP} = rac{6}{6 + 2} = rac{6}{8} = 75.0\%$<br/>
+<span style="font-size: 11.5px; color: var(--text-muted);">Meaning: 75% of tagged refund tickets were actually refunds.</span>
+</li>
+<li style="margin-bottom: 8px;">
+<strong style="color: var(--teal-primary);">Recall:</strong> $rac{TP}{TP + FN} = rac{6}{6 + 4} = rac{6}{10} = 60.0\%$<br/>
+<span style="font-size: 11.5px; color: var(--text-muted);">Meaning: The system caught 60% of all refunds in the queue.</span>
+</li>
+<li>
+<strong style="color: var(--teal-primary);">F1-Score:</strong> $2 	imes rac{	ext{Precision} 	imes 	ext{Recall}}{	ext{Precision} + 	ext{Recall}} = 2 	imes rac{0.75 	imes 0.60}{0.75 + 0.60} pprox 66.7\%$<br/>
+<span style="font-size: 11.5px; color: var(--text-muted);">Meaning: A single score balancing precision and recall.</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 3 | Classification</span>
+</div>
+</div><!-- Slide 18: Hands-on Lab 3 --><div class="slide-container" data-title="Lab 3: Classifier Model" id="slide18">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Hands-on Lab 3: Training &amp; Evaluating the SVM <span class="badge">Lab Session</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div class="lab-step-card">
+<h3><i class="fa-solid fa-gears" style="color: var(--teal-primary);"></i> Step 1: Model Pipeline</h3>
+<p style="font-size: 14.5px;">We load local embeddings, perform a stratified train-test split, fit the Linear SVM, and evaluate performance on unseen reviews.</p>
+<code style="display: block; margin-top: 10px;">python src/train_classifier.py</code>
+</div>
+<div class="lab-step-card" style="border-top-color: var(--navy-dark);">
+<h3><i class="fa-solid fa-magnifying-glass-chart" style="color: var(--navy-dark);"></i> Step 2: Review Outputs</h3>
+<p style="font-size: 14px; margin-bottom: 8px;">Inspect the printed classification report. Analyze the metrics: Accuracy, Precision, Recall, and F1-score per category.</p>
+<p style="font-size: 14px; color: var(--teal-primary); font-weight: 500;">Verify how SVM resolves routing for custom sentences.</p>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 3 | Classification</span>
+</div>
+</div><!-- Slide 19: Module 4 Intro --><div class="slide-container" data-title="Module 4: Clustering &amp; Outliers" id="slide19">
+<canvas class="slide-canvas"></canvas>
+<div class="content-area">
+<div class="section-slide-layout">
+<span class="tag">MODULE 4</span>
+<h2>Unsupervised Semantic Clustering &amp; Anomaly Detection</h2>
+<hr/>
+<p>Slicing customer reviews without standard labels. Grouping feedback using K-Means distance matrices and implementing distance thresholds to identify bot spam, outliers, and extreme complaints.</p>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 4 | Unsupervised ML</span>
+</div>
+</div><!-- Slide 20: K-Means Concept --><div class="slide-container" data-title="Clustering &amp; Outliers" id="slide20">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">K-Means &amp; Outliers in Semantic Vector Spaces <span class="badge">Algorithm Logic</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<h4 style="color: var(--navy-dark); margin-bottom: 8px;">K-Means Topic Discovery</h4>
+<p style="font-size: 14px;">Clusters coordinates by minimizing Euclidean distances inside clusters. We group comments into K = 4 groups automatically based on embeddings.</p>
+<h4 style="color: var(--navy-dark); margin-top: 15px; margin-bottom: 8px;">Anomaly / Outlier Detection</h4>
+<p style="font-size: 14px;">Compute distance: $d_i = \| X_i - \mu_{\text{centroid}} \|$. Data points far away from all cluster centroids represent unusual feedback, potential fraud, or formatting errors.</p>
+</div>
+<div style="background-color: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--card-border);">
+<h4 style="color: var(--teal-primary); margin-bottom: 10px;"><i class="fa-solid fa-circle-nodes"></i> Distance-based Anomaly</h4>
+<div class="image-wrapper" style="height: 220px; background-color: var(--teal-soft); border-radius: 8px; border: 1px dashed var(--teal-primary);">
+<div style="text-align: center; color: var(--navy-dark); font-size: 13.5px; padding: 25px;">
+<span style="font-weight: 600;">Centroid Cluster ($\mu$)</span><br/>
+<span style="font-size: 16px; color: var(--teal-primary);">● ● ● ●</span><br/>
+<span style="font-size: 12px; color: var(--text-muted);">Normal ticket distance: low ($d &lt; 0.2$)</span>
+<div style="margin: 10px auto; width: 60%; border-top: 1.5px dashed #ef4444;"></div>
+<span style="font-size: 16px; color: #ef4444;">✖ [Outlier / Anomaly]</span><br/>
+<span style="font-size: 12px; color: #ef4444; font-weight: 500;">Extreme distance: high ($d &gt; 0.8$)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 4 | Unsupervised ML</span>
+</div>
+</div><!-- Slide 21: Hands-on Lab 4 --><div class="slide-container" data-title="Lab 4: Clustering" id="slide21">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Hands-on Lab 4: Topic Discovery &amp; Spammer Hunt <span class="badge">Lab Session</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div class="lab-step-card">
+<h3><i class="fa-solid fa-code-fork" style="color: var(--teal-primary);"></i> Step 1: Clustering Script</h3>
+<p style="font-size: 14.5px;">Runs K-Means clustering unsupervised on sentence embedding vectors, automatically organizes labels, and isolates outlier points based on the 85th percentile distance threshold.</p>
+<code style="display: block; margin-top: 10px;">python src/clustering.py</code>
+</div>
+<div class="lab-step-card" style="border-top-color: var(--navy-dark);">
+<h3><i class="fa-solid fa-whiteboard" style="color: var(--navy-dark);"></i> Step 2: Inspect Anomaly Outputs</h3>
+<p style="font-size: 14px; margin-bottom: 8px;">Inspect the clustered output lists and look at the detected outliers. Check how K-Means filters unique, atypical sentences from standard support reviews.</p>
+<p style="font-size: 14px; color: var(--teal-primary); font-weight: 500;">This is exactly how companies clean training data and detect bots.</p>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 4 | Unsupervised ML</span>
+</div>
+</div><!-- Slide 22: Module 5 Intro --><div class="slide-container" data-title="Module 5: Classical vs LLM" id="slide22">
+<canvas class="slide-canvas"></canvas>
+<div class="content-area">
+<div class="section-slide-layout">
+<span class="tag">MODULE 5</span>
+<h2>Battle of the Titans: Classical ML vs. Local Zero-Shot LLMs</h2>
+<hr/>
+<p>A direct, head-to-head comparison. Benchmarking classical trained classifiers (SVM) against zero-shot local Large Language Models running on your machine (Ollama API).</p>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 5 | Model Comparison</span>
+</div>
+</div><!-- Slide 23: Zero-Shot prompt theory --><div class="slide-container" data-title="Zero-Shot API Prompting" id="slide23">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Theory: Local Zero-Shot Prompting Architecture <span class="badge">Critical Theory</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<p>How does zero-shot LLM routing differ from SVM? It bypasses training data completely by leveraging massive pre-trained semantic weights.</p>
+<ul style="margin-top: 15px; list-style-type: square; padding-left: 20px;">
+<li><strong>In-Context Rules:</strong> We insert system instructions, class labels, and prompt instructions directly inside the context window.</li>
+<li><strong>JSON Enforcement:</strong> Passing structural schemas and configuring API return formats to enforce strict JSON syntax outputs.</li>
+</ul>
+</div>
+<div style="background-color: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--card-border);">
+<h4 style="color: var(--teal-primary); margin-bottom: 8px;"><i class="fa-solid fa-code"></i> JSON Output Schema</h4>
+<pre style="font-family: 'Fira Code', monospace; font-size: 11.5px; color: var(--text-dark); line-height: 1.45; background-color: var(--teal-soft); padding: 10px; border-radius: 8px;">
+{
+  "category": "Refunds",
+  "reason": "The customer requests money return."
+}</pre>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 5 | Model Comparison</span>
+</div>
+</div><!-- Slide 24: Ollama JSON prompt --><div class="slide-container" data-title="Local LLM API" id="slide24">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Running Local Zero-Shot Prompts with Ollama <span class="badge">Ollama Integration</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<h4 style="color: var(--navy-dark); margin-bottom: 8px;">Why Local LLM?</h4>
+<p style="font-size: 14px; line-height: 1.45;">Local LLMs (e.g. Phi-3 or Llama-3 running on Ollama) provide zero-data startup capabilities, privacy compliance (no data leaves the machine), and zero-cost token inference.</p>
+<h4 style="color: var(--navy-dark); margin-top: 12px; margin-bottom: 8px;">JSON Mode Extraction</h4>
+<p style="font-size: 14px; line-height: 1.45;">Instructing LLMs to return strict JSON strings ensures downstream code can parse outputs reliably without human regex parsing.</p>
+</div>
+<div style="background-color: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--card-border);">
+<h4 style="color: var(--teal-primary); margin-bottom: 10px;"><i class="fa-solid fa-code"></i> Python Ollama Request</h4>
+<pre style="font-family: 'Fira Code', monospace; font-size: 11px; line-height: 1.35; color: var(--text-dark); overflow-x: auto; background-color: var(--teal-soft); padding: 10px; border-radius: 8px;">
+import ollama
+
+response = ollama.generate(
+    model='phi3',
+    prompt=prompt,
+    format='json'  # Request structured JSON
+)
+output = json.loads(response['response'])
+print(output['category'])</pre>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 5 | Model Comparison</span>
+</div>
+</div><!-- Slide 25: Trade-off Matrix --><div class="slide-container" data-title="Trade-off Matrix" id="slide25">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Model Benchmarking: SVM vs. Local LLM (Ollama) <span class="badge">Trade-Off Analysis</span></h2>
+<div class="content-area">
+<table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; background-color: var(--card-bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--card-border); box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+<thead>
+<tr style="background-color: var(--navy-dark); color: #ffffff; border-bottom: 2px solid var(--teal-primary);">
+<th style="padding: 12px;">Criteria</th>
+<th style="padding: 12px;">Classical Supervised ML (SVM)</th>
+<th style="padding: 12px;">Zero-Shot LLM (Ollama / Phi-3)</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: 1px solid var(--card-border);">
+<td style="padding: 12px; font-weight: 600;">Training Data Needed</td>
+<td style="padding: 12px;">High (Requires labels to map coordinates)</td>
+<td style="padding: 12px; color: var(--teal-primary); font-weight: 600;">Zero (Uses built-in instruction training)</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--card-border);">
+<td style="padding: 12px; font-weight: 600;">Inference Latency</td>
+<td style="padding: 12px; color: var(--teal-primary); font-weight: 600;">Extremely Fast (&lt; 5ms)</td>
+<td style="padding: 12px;">Slower (1 - 5 seconds depending on hardware)</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--card-border);">
+<td style="padding: 12px; font-weight: 600;">Compute Requirements</td>
+<td style="padding: 12px; color: var(--teal-primary); font-weight: 600;">Low (Runs on standard CPU thread)</td>
+<td style="padding: 12px;">Heavy (Demands GPU/VRAM for high token speeds)</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--card-border);">
+<td style="padding: 12px; font-weight: 600;">System Cost</td>
+<td style="padding: 12px;">Near Zero</td>
+<td style="padding: 12px;">Low if local, high if hosting commercial endpoints</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--card-border);">
+<td style="padding: 12px; font-weight: 600;">Dynamic Adaptability</td>
+<td style="padding: 12px;">Low (Requires retraining script)</td>
+<td style="padding: 12px; color: var(--teal-primary); font-weight: 600;">High (Just modify prompt schema)</td>
+</tr>
+<tr>
+<td style="padding: 12px; font-weight: 600;">Output Consistency</td>
+<td style="padding: 12px; color: var(--teal-primary); font-weight: 600;">100% Consistent Class Mapping</td>
+<td style="padding: 12px;">Can hallucinate or return bad JSON structures</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 5 | Model Comparison</span>
+</div>
+</div><!-- Slide 26: Hands-on Lab 5 --><div class="slide-container" data-title="Lab 5: LLM Comparison" id="slide26">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Hands-on Lab 5: Running Local Zero-Shot Ollama <span class="badge">Lab Session</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div class="lab-step-card">
+<h3><i class="fa-solid fa-terminal" style="color: var(--teal-primary);"></i> Step 1: Install Ollama</h3>
+<p style="font-size: 14px; margin-bottom: 10px;">Download Ollama Desktop client. Open terminal and pull the lightweight Microsoft Phi-3 model:</p>
+<code style="display: block; margin-bottom: 12px;">ollama pull phi3</code>
+<p style="font-size: 14px;">Verify the model running using <code>ollama list</code>.</p>
+</div>
+<div class="lab-step-card" style="border-top-color: var(--navy-dark);">
+<h3><i class="fa-solid fa-microchip" style="color: var(--navy-dark);"></i> Step 2: Run Comparison</h3>
+<p style="font-size: 14px; margin-bottom: 10px;">Execute the zero-shot script to prompt local model, extract JSON tags, and contrast with classical SVM:</p>
+<code style="display: block; margin-bottom: 12px;">python src/zero_shot_llm.py</code>
+<p style="font-size: 13.5px; font-style: italic; color: var(--text-muted);">Compare latency, parsing errors, and label matching against SVM predictions.</p>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Module 5 | Model Comparison</span>
+</div>
+</div><!-- Slide 27: Project Kickstart --><div class="slide-container" data-title="Project Structure" id="slide27">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Structure for Real-World AI Project Kickstart <span class="badge">Best Practices</span></h2>
+<div class="content-area">
+<div class="two-column align-top">
+<div>
+<p>Faculties can immediately adopt this template for student projects or thesis research work. It enforces modern engineering practices:</p>
+<ul style="margin-top: 15px; list-style-type: square; padding-left: 20px;">
+<li><strong>src/ Folder:</strong> Encapsulates isolated, modular python components instead of giant script dumps.</li>
+<li><strong>data/ Folder:</strong> Excluded from git (using <code>.gitignore</code>) but populated programmatically.</li>
+<li><strong>requirements.txt:</strong> Locks dependencies ensuring reproducible execution.</li>
+</ul>
+</div>
+<div style="background-color: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--card-border);">
+<h4 style="color: var(--teal-primary); margin-bottom: 8px;"><i class="fa-solid fa-folder-tree"></i> Workspace Layout</h4>
+<pre style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--text-dark); line-height: 1.4;">
+project_root/
+├── requirements.txt
+├── data/
+│   └── reviews_dataset.csv
+└── src/
+    ├── download_data.py
+    ├── feature_extraction.py
+    ├── train_classifier.py
+    ├── clustering.py
+    └── zero_shot_llm.py</pre>
+</div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Kickstart Guide</span>
+</div>
+</div><!-- Slide 28: Q&A --><div class="slide-container" data-title="Q&amp;A Session" id="slide28">
+<canvas class="slide-canvas"></canvas>
+<h2 class="slide-title">Conclusion &amp; Interactive Q&amp;A Session <span class="badge">Wrap Up</span></h2>
+<div class="content-area">
+<div class="qa-layout">
+<h2>Thank You!</h2>
+<p style="font-size: 18px; margin-bottom: 20px;">Day 2 session has completed. We successfully bridged Classical ML and modern Open-Source tooling.</p>
+<div class="contact-info">
+<i class="fa-solid fa-circle-question" style="color: var(--teal-primary); margin-right: 8px;"></i> Open Floor for questions: Kaggle API, Hugging Face Hub, SVM parameters, K-Means elbow plots, and Ollama integration.
+                    </div>
+</div>
+</div>
+<div class="slide-footer">
+<span class="left">Sarveshwar Academy × Knowledge Institute of Technology</span>
+<span class="right">Q&amp;A | 28</span>
+</div>
+</div></div>
+<!-- Controls Bottom Bar -->
+<div class="controls-bar">
+<div class="control-group">
+<button class="control-btn" id="drawerToggleBtn"><i class="fa-solid fa-list-ul"></i> Index</button>
+<button class="control-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+<span class="slide-counter" id="slideCounter">Slide 1 of 23</span>
+<button class="control-btn" id="nextBtn">Next <i class="fa-solid fa-chevron-right"></i></button>
+</div>
+<div class="control-group">
+<button class="control-btn" id="laserBtn"><i class="fa-solid fa-circle-radiation"></i> Laser Pointer (L)</button>
+<button class="control-btn" id="penBtn"><i class="fa-solid fa-pen-fancy"></i> Draw (P)</button>
+<button class="control-btn" id="clearPenBtn"><i class="fa-solid fa-eraser"></i> Clear Drawings</button>
+<button class="control-btn" id="overviewBtn"><i class="fa-solid fa-table-cells-large"></i> Grid View</button>
+<button class="control-btn" id="themeBtn"><i class="fa-solid fa-circle-half-stroke"></i> Theme</button>
+</div>
+</div>
+<!-- Sidebar Navigation Drawer -->
+<div class="slide-drawer" id="slideDrawer">
+<div class="drawer-header">
+<h3>Table of Contents</h3>
+<button class="drawer-close" id="drawerCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<ul class="drawer-list" id="drawerList">
+<!-- Dynamically populated -->
+</ul>
+</div>
+<!-- Floating Red Laser Pointer -->
+<div class="laser-pointer-dot" id="laserPointerDot"></div>
+</div>
+<script>
+    // Configuration & State
+    let currentSlide = 1;
+    const slides = document.querySelectorAll('.slide-container');
+    const totalSlides = slides.length;
+    
+    // Tools State
+    let laserActive = false;
+    let penActive = false;
+    let overviewMode = false;
+    
+    // Canvas Annotation Storage per slide
+    const canvases = {};
+    const contexts = {};
+    const drawingState = {}; // Store paths to redraw on resize
+    
+    // Initialize DOM References
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slideCounter = document.getElementById('slideCounter');
+    const laserBtn = document.getElementById('laserBtn');
+    const penBtn = document.getElementById('penBtn');
+    const clearPenBtn = document.getElementById('clearPenBtn');
+    const overviewBtn = document.getElementById('overviewBtn');
+    const themeBtn = document.getElementById('themeBtn');
+    const presentationContainer = document.getElementById('presentationContainer');
+    const slidesViewport = document.getElementById('slidesViewport');
+    const laserPointerDot = document.getElementById('laserPointerDot');
+    const slideDrawer = document.getElementById('slideDrawer');
+    const drawerToggleBtn = document.getElementById('drawerToggleBtn');
+    const drawerCloseBtn = document.getElementById('drawerCloseBtn');
+    const drawerList = document.getElementById('drawerList');
+
+    // Slide Navigation
+    function goToSlide(index) {
+        if (index < 1 || index > totalSlides) return;
+        
+        // Handle class updates
+        slides.forEach((slide, idx) => {
+            const slideNum = idx + 1;
+            slide.classList.remove('active', 'previous');
+            if (slideNum < index) {
+                slide.classList.add('previous');
+            }
+        });
+        
+        slides[index - 1].classList.add('active');
+        currentSlide = index;
+        updateUI();
+        
+        // Resize Canvas if needed
+        initCanvasForSlide(index);
+    }
+
+    // Advance slide helper
+    function nextSlide() {
+        if (currentSlide < totalSlides) {
+            goToSlide(currentSlide + 1);
+        }
+    }
+
+    // Go back slide helper
+    function prevSlide() {
+        if (currentSlide > 1) {
+            goToSlide(currentSlide - 1);
+        }
+    }
+
+    function updateUI() {
+        slideCounter.textContent = `Slide ${currentSlide} of ${totalSlides}`;
+        
+        // Update active class in drawer
+        const drawerItems = document.querySelectorAll('.drawer-item');
+        drawerItems.forEach((item, idx) => {
+            if (idx + 1 === currentSlide) {
+                item.classList.add('active');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        
+        // Check if drawing mode is active on slide container
+        slides.forEach((slide, idx) => {
+            if (idx + 1 === currentSlide && penActive) {
+                slide.classList.add('drawing-active');
+            } else {
+                slide.classList.remove('drawing-active');
+            }
+        });
+    }
+
+    // Toggle overview mode
+    function toggleOverview() {
+        overviewMode = !overviewMode;
+        if (overviewMode) {
+            presentationContainer.classList.add('overview-active');
+            // Disable laser and drawing tools in overview
+            if (laserActive) toggleLaser();
+            if (penActive) togglePen();
+        } else {
+            presentationContainer.classList.remove('overview-active');
+            // Re-scale slide viewport
+            scaleViewport();
+            goToSlide(currentSlide);
+        }
+        overviewBtn.classList.toggle('active', overviewMode);
+    }
+
+    // Dynamic responsive scaling for slide viewport
+    function scaleViewport() {
+        if (overviewMode) return;
+        const width = 1280;
+        const height = 720;
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight - 20; // Floating overlay controls
+        const scaleX = windowWidth / width;
+        const scaleY = windowHeight / height;
+        const scale = Math.min(scaleX, scaleY, 1.25); // Limit scaling to prevent pixelation
+        slidesViewport.style.transform = `scale(${scale})`;
+    }
+
+    // Laser Pointer Logic
+    function toggleLaser() {
+        laserActive = !laserActive;
+        laserBtn.classList.toggle('active', laserActive);
+        if (laserActive) {
+            if (penActive) togglePen(); // Deactivate drawing mode
+            slidesViewport.style.cursor = 'none';
+            laserPointerDot.style.display = 'block';
+        } else {
+            slidesViewport.style.cursor = 'default';
+            laserPointerDot.style.display = 'none';
+        }
+    }
+
+    // Capture global mouse movements and center red dot
+    function moveLaser(e) {
+        if (!laserActive) return;
+        laserPointerDot.style.left = `${e.clientX}px`;
+        laserPointerDot.style.top = `${e.clientY}px`;
+    }
+
+    // Whiteboard Canvas Drawing Logic
+    function togglePen() {
+        penActive = !penActive;
+        penBtn.classList.toggle('active', penActive);
+        
+        slides.forEach((slide, idx) => {
+            if (idx + 1 === currentSlide && penActive) {
+                slide.classList.add('drawing-active');
+            } else {
+                slide.classList.remove('drawing-active');
+            }
+        });
+        
+        if (penActive) {
+            if (laserActive) toggleLaser(); // Deactivate laser pointer
+        }
+    }
+
+    function initCanvasForSlide(slideIndex) {
+        const slideId = `slide${slideIndex}`;
+        const slideContainer = document.getElementById(slideId);
+        const canvas = slideContainer.querySelector('.slide-canvas');
+        if (!canvas || canvases[slideId]) return;
+        
+        // Establish dimensions matches slide presentation coordinate system
+        canvas.width = 1280;
+        canvas.height = 720;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#ef4444'; // Red drawing line
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        canvases[slideId] = canvas;
+        contexts[slideId] = ctx;
+        drawingState[slideId] = [];
+        
+        // Handle Pointer drawing operations
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        
+        // Helper to convert screen clicks to raw 1280x720 coordinates
+        function getCanvasCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Accounts for CSS scaling transformations on the container
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+        
+        canvas.addEventListener('pointerdown', (e) => {
+            if (!penActive) return;
+            isDrawing = true;
+            const coords = getCanvasCoordinates(e);
+            lastX = coords.x;
+            lastY = coords.y;
+            
+            // Record path start
+            drawingState[slideId].push({ type: 'start', x: lastX, y: lastY });
+        });
+        
+        canvas.addEventListener('pointermove', (e) => {
+            if (!isDrawing || !penActive) return;
+            const coords = getCanvasCoordinates(e);
+            const currentX = coords.x;
+            const currentY = coords.y;
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+            
+            // Record path stroke
+            drawingState[slideId].push({ type: 'line', x: currentX, y: currentY });
+            
+            lastX = currentX;
+            lastY = currentY;
+        });
+        
+        canvas.addEventListener('pointerup', () => { isDrawing = false; });
+        canvas.addEventListener('pointerout', () => { isDrawing = false; });
+    }
+
+    function clearSlideDrawings() {
+        const slideId = `slide${currentSlide}`;
+        const canvas = canvases[slideId];
+        const ctx = contexts[slideId];
+        if (canvas && ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawingState[slideId] = [];
+        }
+    }
+
+    // Populate Slide Index Drawer
+    function buildDrawerList() {
+        drawerList.innerHTML = '';
+        slides.forEach((slide, idx) => {
+            const title = slide.getAttribute('data-title') || `Slide ${idx + 1}`;
+            const item = document.createElement('li');
+            item.className = `drawer-item ${idx + 1 === currentSlide ? 'active' : ''}`;
+            item.innerHTML = `<span class="num">${idx + 1}</span> ${title}`;
+            item.addEventListener('click', () => {
+                goToSlide(idx + 1);
+                toggleDrawer(false);
+                if (overviewMode) toggleOverview();
+            });
+            drawerList.appendChild(item);
+        });
+    }
+
+    function toggleDrawer(force) {
+        const isOpen = slideDrawer.classList.contains('open');
+        const nextState = force !== undefined ? force : !isOpen;
+        slideDrawer.classList.toggle('open', nextState);
+    }
+
+    // Keyboard controls
+    function handleKeyDown(e) {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+            nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
+            prevSlide();
+        } else if (e.key.toLowerCase() === 'l') {
+            toggleLaser();
+        } else if (e.key.toLowerCase() === 'p') {
+            togglePen();
+        } else if (e.key === 'Escape') {
+            if (slideDrawer.classList.contains('open')) {
+                toggleDrawer(false);
+            } else {
+                toggleOverview();
+            }
+        }
+    }
+
+    // Initialize Event Listeners
+    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', nextSlide);
+    laserBtn.addEventListener('click', toggleLaser);
+    penBtn.addEventListener('click', togglePen);
+    clearPenBtn.addEventListener('click', clearSlideDrawings);
+    overviewBtn.addEventListener('click', toggleOverview);
+    drawerToggleBtn.addEventListener('click', () => toggleDrawer());
+    drawerCloseBtn.addEventListener('click', () => toggleDrawer(false));
+    
+    // Global Event handlers
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', scaleViewport);
+        window.addEventListener('pointermove', moveLaser);
+    
+    // Auto-hide controls bar on mouse move
+    const controlsBar = document.querySelector('.controls-bar');
+    window.addEventListener('pointermove', (e) => {
+        const drawerOpen = document.getElementById('slideDrawer').classList.contains('open');
+        const overviewActive = document.getElementById('presentationContainer').classList.contains('overview-active');
+        if (drawerOpen || overviewActive) {
+            controlsBar.classList.add('visible');
+            return;
+        }
+
+        if (e.clientY >= window.innerHeight - 60) {
+            controlsBar.classList.add('visible');
+        } else if (e.clientY < window.innerHeight - 90) {
+            controlsBar.classList.remove('visible');
+        }
+    });
+
+    // Theme Toggle
+    themeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+    });
+
+    // Overview Mode Slide Clicks
+    slides.forEach((slide, idx) => {
+        slide.addEventListener('click', (e) => {
+            if (overviewMode) {
+                goToSlide(idx + 1);
+                toggleOverview();
+                e.stopPropagation();
+            }
+        });
+    });
+
+    // Application Bootstrap Setup
+    window.addEventListener('DOMContentLoaded', () => {
+        scaleViewport();
+        buildDrawerList();
+        initCanvasForSlide(1);
+        updateUI();
+    });
+
+</script>
+</body>
+</html>
